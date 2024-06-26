@@ -17,7 +17,6 @@ data class Book(
 
     fun getRatingString(): String {
         return when (rating) {
-            0 -> "☆☆☆☆☆"
             1 -> "★☆☆☆☆"
             2 -> "★★☆☆☆"
             3 -> "★★★☆☆"

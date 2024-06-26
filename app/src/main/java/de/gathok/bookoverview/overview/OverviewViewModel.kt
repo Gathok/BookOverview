@@ -16,26 +16,48 @@ class OverviewViewModel (
 ): ViewModel() {
 
     private val _sortType = MutableStateFlow(SortType.TITLE)
-    private val _contacts = _sortType
-        .flatMapLatest { sortType ->
-            when(sortType) {
-                SortType.TITLE -> dao.getBooksOrderedByTitle()
-                SortType.AUTHOR -> dao.getBooksOrderedByAuthor()
+    private val _filterPossessionStatus = MutableStateFlow<Boolean?>(null)
+    private val _filterReadStatus = MutableStateFlow<Boolean?>(null)
+    private val _filterList = combine(_filterPossessionStatus, _filterReadStatus, _sortType) { possessionStatus, readStatus, sortType ->
+        listOf(
+            possessionStatus,
+            readStatus,
+            sortType
+        )
+    }
+
+    private val _books = _filterList
+        .flatMapLatest { filters ->
+            when (filters[2]) {
+                SortType.AUTHOR -> dao.getBooks(filters[0] as Boolean?, filters[1] as Boolean?, "author")
+                else -> dao.getBooks(filters[0] as Boolean?, filters[1] as Boolean?, "title")
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
     private val _state = MutableStateFlow(OverviewState())
-    val state = combine(_state, _sortType, _contacts) { state, sortType, books ->
+    val state = combine(_state, _sortType, _books) { state, sortType, books ->
             state.copy(
                 books = books,
-                sortType = sortType
+                sortType = sortType,
+                possessionStatus = _filterPossessionStatus.value,
+                readStatus = _filterReadStatus.value
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), OverviewState())
 
     fun onEvent(event: OverviewEvent) {
         when (event) {
-            is OverviewEvent.SortBookOverview -> {
+            is OverviewEvent.ChangePossessionStatus -> {
+                _filterPossessionStatus.value = event.possessionStatus
+            }
+            is OverviewEvent.ChangeReadStatus -> {
+                _filterReadStatus.value = event.readStatus
+            }
+            is OverviewEvent.ChangeSortType -> {
                 _sortType.value = event.sortType
+            }
+            is OverviewEvent.ChangeFilterList -> {
+                _filterPossessionStatus.value = event.possessionStatus
+                _filterReadStatus.value = event.readStatus
             }
         }
     }

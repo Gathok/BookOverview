@@ -4,5 +4,7 @@ import de.gathok.bookoverview.Book
 
 data class OverviewState(
     val books: List<Book> = emptyList(),
-    val sortType: SortType = SortType.TITLE
+    val sortType: SortType = SortType.TITLE,
+    var possessionStatus: Boolean? = null,
+    var readStatus: Boolean? = null
 )

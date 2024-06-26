@@ -19,7 +19,8 @@ import de.gathok.bookoverview.add.AddEvent
 import de.gathok.bookoverview.add.AddState
 import de.gathok.bookoverview.add.AddViewModel
 import de.gathok.bookoverview.data.BookDatabase
-import de.gathok.bookoverview.overview.BookOverviewScreen
+import de.gathok.bookoverview.overview.OverviewEvent
+import de.gathok.bookoverview.overview.OverviewScreen
 import de.gathok.bookoverview.overview.OverviewState
 import de.gathok.bookoverview.overview.OverviewViewModel
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
@@ -61,23 +62,23 @@ class MainActivity : ComponentActivity() {
             BookOverviewTheme {
                 val overviewState by overviewViewModel.state.collectAsState()
                 val addState by addViewModel.state.collectAsState()
-                NavGraph(overviewState, addState, addViewModel::onEvent)
+                NavGraph(overviewState, overviewViewModel::onEvent, addState, addViewModel::onEvent)
             }
         }
     }
 }
 
 @Composable
-fun NavGraph(overviewState: OverviewState, addState: AddState, onEvent: (AddEvent) -> Unit){
+fun NavGraph(overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Unit, addState: AddState, addEvent: (AddEvent) -> Unit){
     val navController = rememberNavController()
     NavHost(navController, startDestination = Screen.BookList.route) {
         composable(Screen.BookList.route) {
             // Your book list screen
-            BookOverviewScreen(navController, overviewState)
+            OverviewScreen(navController, overviewState, overviewEvent)
         }
         composable(Screen.AddBook.route) {
             // Your add book screen
-            AddBookScreen(navController, addState, onEvent)
+            AddBookScreen(navController, addState, addEvent)
         }
     }
 }

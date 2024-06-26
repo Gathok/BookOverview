@@ -5,5 +5,6 @@ data class AddState(
     val author: String = "",
     val isbn: String = "",
     val possessionStatus: Boolean = false,
-    val readStatus: Boolean = false
+    val readStatus: Boolean = false,
+    val rating: Int = 0
 )

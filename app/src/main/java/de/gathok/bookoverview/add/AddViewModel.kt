@@ -33,12 +33,16 @@ class AddViewModel (
             is AddEvent.TitleChanged -> {
                 _state.value = _state.value.copy(title = event.title)
             }
+            is AddEvent.RatingChanged -> {
+                _state.value = _state.value.copy(rating = event.rating)
+            }
             is AddEvent.AddBook -> {
                 val title = _state.value.title
                 val author = _state.value.author
                 val isbn = _state.value.isbn
                 val possessionStatus = _state.value.possessionStatus
                 val readStatus = _state.value.readStatus
+                val rating = _state.value.rating
 
                 if (title.isBlank() || author.isBlank() || isbn.isBlank()) {
                     return
@@ -49,7 +53,8 @@ class AddViewModel (
                     author = author,
                     isbn = isbn,
                     possessionStatus = possessionStatus,
-                    readStatus = readStatus
+                    readStatus = readStatus,
+                    rating = rating
                 )
 
                 viewModelScope.launch {
@@ -58,7 +63,9 @@ class AddViewModel (
 
                 _state.value = AddState()
             }
-            AddEvent.ClearFields -> TODO()
+            AddEvent.ClearFields -> {
+                _state.value = AddState()
+            }
         }
     }
 }
