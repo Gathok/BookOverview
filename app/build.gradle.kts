@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -49,8 +51,7 @@ android {
     }
 }
 
-val nav_version = "2.4.1"
-val room_version = "2.4.1"
+var room_version = "2.5.0"
 
 dependencies {
     implementation(libs.androidx.core.ktx)
@@ -61,7 +62,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.core.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,11 +70,13 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.navigation.compose)
 
-    implementation(libs.androidx.room.runtime)
+    // Room
+    implementation(libs.androidx.room.runtime.v250)
     implementation(libs.androidx.room.ktx)
-    testImplementation(libs.androidx.room.testing)
+    ksp("androidx.room:room-compiler:$room_version")
 }

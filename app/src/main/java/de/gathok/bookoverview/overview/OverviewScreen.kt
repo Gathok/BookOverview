@@ -1,4 +1,4 @@
-package de.gathok.bookoverview
+package de.gathok.bookoverview.overview
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.clickable
@@ -27,13 +27,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import de.gathok.bookoverview.Book
+import de.gathok.bookoverview.util.Screen
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 import de.gathok.bookoverview.ui.theme.ratingStars
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun BookOverviewScreen(navController: NavController? = null) {
+fun BookOverviewScreen(
+    navController: NavController? = null,
+    state: OverviewState,
+//    onEvent: (overviewEvent) -> Unit
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -51,40 +57,11 @@ fun BookOverviewScreen(navController: NavController? = null) {
             }
         }
     ) { pad ->
-        val books = listOf(
-            Book(
-                title = "Harry Potter and the Philosopher's Stone",
-                author = "J.K. Rowling",
-                isbn = "978-0747532699",
-                possessionStatus = true,
-                readStatus = true,
-                price = 6.99,
-                rating = 5
-            ),
-            Book(
-                title = "The Hobbit",
-                author = "J.R.R. Tolkien",
-                isbn = "978-0261102217",
-                possessionStatus = true,
-                readStatus = true,
-                price = 7.99,
-                rating = 5
-            ),
-            Book(
-                title = "The Catcher in the Rye",
-                author = "J.D. Salinger",
-                isbn = "978-0241950432",
-                possessionStatus = true,
-                readStatus = true,
-                price = 8.99,
-                rating = 5
-            )
-        )
         LazyColumn (
             modifier = Modifier.fillMaxSize()
                 .padding(pad)
         ) {
-            items(books) { book ->
+            items(state.books) { book ->
                 BookItem(book)
             }
         }
@@ -95,7 +72,7 @@ fun BookOverviewScreen(navController: NavController? = null) {
 fun BookItem(book: Book) {
     Row (
         modifier = Modifier
-            .clickable { /* TODO: Handle click here */ }
+            .clickable { TODO() }
             .padding(12.dp, 4.dp, 12.dp, 4.dp)
             .fillMaxWidth()
     ) {
@@ -105,7 +82,7 @@ fun BookItem(book: Book) {
                 .fillMaxWidth(1f)
         ) {
             Text(
-                text = book.getRating() ?: "No rating",
+                text = book.getRatingString(),
                 modifier = Modifier.padding(end = 8.dp),
                 color = when (book.rating) {
                     in 0..5 -> ratingStars
@@ -156,16 +133,14 @@ fun BookItemPreview() {
             author = "J.K. Rowling",
             isbn = "978-0747532699",
             possessionStatus = false,
-            readStatus = true,
-            price = 6.99,
-            rating = 5
+            readStatus = true
         )
         BookItem(book)
     }
 }
 
-@Preview(showBackground = true, name = "BookOverviewScreen", group = "MainActivity")
-@Composable
-fun BookOverviewScreenPreview() {
-    BookOverviewScreen()
-}
+//@Preview(showBackground = true, name = "BookOverviewScreen", group = "MainActivity")
+//@Composable
+//fun BookOverviewScreenPreview() {
+//    BookOverviewScreen()
+//}
