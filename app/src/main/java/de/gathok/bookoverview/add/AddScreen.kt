@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,10 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,7 +40,7 @@ import de.gathok.bookoverview.ui.theme.ratingStars
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit) {
+fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -154,7 +151,8 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
 fun RatingBar(
     max: Int = 5,
     current: Int,
-    onRatingChanged: (Int) -> Unit
+    onRatingChanged: (Int) -> Unit,
+    enabled: Boolean = true
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -170,7 +168,11 @@ fun RatingBar(
                     imageVector = if (i <= current) Icons.Filled.Star else Icons.Outlined.Star,
                     contentDescription = "${stringResource(id = R.string.rating)}: $i",
                     modifier = Modifier
-                        .clickable { onRatingChanged(i) }
+                        .clickable {
+                            if (enabled) {
+                                onRatingChanged(i)
+                            }
+                        }
                         .padding(horizontal = 4.dp)
                         .weight(1f) // This will divide the available space equally between the stars
                         .aspectRatio(1f), // This will make the stars square

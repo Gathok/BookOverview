@@ -15,4 +15,9 @@
     <string name="author">Author</string>
     <string name="isbn" translatable="false">ISBN</string>
     <string name="rating">Rating</string>
+    <string name="book_details">Book details</string>
+    <string name="edit">Edit</string>
+    <string name="save">Save</string>
+    <string name="error">Error</string>
+    <string name="error_message">There was a problem. Try again.</string>
 </resources>

@@ -1,6 +1,7 @@
 package de.gathok.bookoverview.util
 
 sealed class Screen(val route: String) {
-    data object BookList : Screen("bookList")
-    data object AddBook : Screen("addBook")
+    data object Overview : Screen("overview")
+    data object Add : Screen("add")
+    data object Details : Screen("details")
 }

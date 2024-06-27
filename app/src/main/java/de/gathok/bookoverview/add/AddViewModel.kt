@@ -18,6 +18,9 @@ class AddViewModel (
 
     fun onEvent(event: AddEvent) {
         when(event) {
+            is AddEvent.TitleChanged -> {
+                _state.value = _state.value.copy(title = event.title)
+            }
             is AddEvent.AuthorChanged -> {
                 _state.value = _state.value.copy(author = event.author)
             }
@@ -29,9 +32,6 @@ class AddViewModel (
             }
             is AddEvent.ReadStatusChanged -> {
                 _state.value = _state.value.copy(readStatus = event.readStatus)
-            }
-            is AddEvent.TitleChanged -> {
-                _state.value = _state.value.copy(title = event.title)
             }
             is AddEvent.RatingChanged -> {
                 _state.value = _state.value.copy(rating = event.rating)

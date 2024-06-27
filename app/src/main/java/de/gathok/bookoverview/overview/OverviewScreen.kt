@@ -25,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -34,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -65,30 +67,11 @@ import kotlinx.coroutines.delay
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun OverviewScreen(
-    navController: NavController? = null,
+    navController: NavController,
     state: OverviewState,
     onEvent: (OverviewEvent) -> Unit
 ) {
-    var showDetailsDialog by remember { mutableStateOf(false) }
-    var detailBook by remember { mutableStateOf<Book?>(null) }
-
     var showFilterDialog by remember { mutableStateOf(false) }
-
-    if (showDetailsDialog) {
-        AlertDialog(
-            onDismissRequest = { showDetailsDialog = false },
-            title = { Text("Book Details") },
-            text = {
-                Text("ISBN: ${detailBook?.isbn ?: stringResource(id = R.string.not_found )}."
-                        + stringResource(id = R.string.more_details_soon))
-            },
-            confirmButton = {
-                Button(onClick = { showDetailsDialog = false }) {
-                    Text("OK")
-                }
-            }
-        )
-    }
 
     if (showFilterDialog) {
         FilterDialog(
@@ -127,7 +110,7 @@ fun OverviewScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController?.navigate(Screen.AddBook.route) },
+            FloatingActionButton(onClick = { navController.navigate(Screen.Add.route) },
                 modifier = Modifier
                     .padding(12.dp)) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(id = R.string.add_book))
@@ -143,16 +126,16 @@ fun OverviewScreen(
                 items = state.books,
                 key = { it.id }
             ) { book ->
-                SwipeToDeleteContainer(
+                SwipeContainer(
                     item = book,
+                    onDetails = {
+                        navController.navigate("${Screen.Details.route}/${it.id}")
+                    },
                     onDelete = {
                         onEvent(OverviewEvent.DeleteBook(it))
                     },
                 ) {
-                    BookItem(book) { clickedBook ->
-                        detailBook = clickedBook
-                        showDetailsDialog = true
-                    }
+                    BookItem(book)
                 }
             }
         }
@@ -160,12 +143,12 @@ fun OverviewScreen(
 }
 
 @Composable
-fun BookItem(book: Book, onBookClick: (Book) -> Unit) {
+fun BookItem(book: Book) {
     Row (
         modifier = Modifier
-            .clickable { onBookClick(book) }
-            .padding(12.dp, 4.dp, 12.dp, 4.dp)
+            .padding(12.dp, 0.dp)
             .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Column (
             modifier = Modifier
@@ -319,8 +302,9 @@ fun TripleSwitch(
 }
 
 @Composable
-fun <T> SwipeToDeleteContainer(
+fun <T> SwipeContainer(
     item: T,
+    onDetails: (T) -> Unit,
     onDelete: (T) -> Unit,
     animationDuration: Int = 500,
     content: @Composable (T) -> Unit
@@ -328,27 +312,36 @@ fun <T> SwipeToDeleteContainer(
     var isRemoved by remember {
         mutableStateOf(false)
     }
+    var isDetails by remember {
+        mutableStateOf(false)
+    }
     val state = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
-            if (value == SwipeToDismissBoxValue.EndToStart) {
-                isRemoved = true
-                true
-            } else {
-                false
+            when (value) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    isRemoved = true
+                    true
+                }
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    isDetails = true
+                    false
+                }
+                else -> false
             }
         }
     )
 
-    LaunchedEffect(key1 = isRemoved) {
+    LaunchedEffect(key1 = isRemoved, key2 = isDetails) {
         if(isRemoved) {
             delay(animationDuration.toLong())
             onDelete(item)
+        } else if (isDetails) {
+            onDetails(item)
         }
     }
 
-
     AnimatedVisibility(
-        visible = !isRemoved,
+        visible = !isRemoved && !isDetails,
         exit = shrinkVertically(
             animationSpec = tween(durationMillis = animationDuration),
             shrinkTowards = Alignment.Top
@@ -356,30 +349,47 @@ fun <T> SwipeToDeleteContainer(
     ) {
         SwipeToDismissBox(
             state = state,
-            backgroundContent = { DeleteBackground(state) },
+            backgroundContent = {
+                CombinedBackground(state)
+            },
             enableDismissFromStartToEnd = true,
+            enableDismissFromEndToStart = true,
             content = { content(item) }
         )
     }
 }
 
 @Composable
-fun DeleteBackground(
+fun CombinedBackground(
     swipeToDismissBoxState: SwipeToDismissBoxState
 ) {
-    val color = if (swipeToDismissBoxState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
-        Color.Red
-    } else Color.Transparent
+    val color = when (swipeToDismissBoxState.dismissDirection) {
+        SwipeToDismissBoxValue.StartToEnd -> {
+            Color.Green
+        }
+        SwipeToDismissBoxValue.EndToStart -> {
+            Color.Red
+        }
+        else -> Color.Transparent
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color)
             .padding(16.dp),
-        contentAlignment = Alignment.CenterEnd
+        contentAlignment = when (swipeToDismissBoxState.dismissDirection) {
+            SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
+            SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+            else -> Alignment.Center
+        }
     ) {
         Icon(
-            imageVector = Icons.Default.Delete,
+            imageVector = when (swipeToDismissBoxState.dismissDirection) {
+                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Info
+                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                else -> Icons.Default.Settings
+            },
             contentDescription = null,
             tint = Color.White
         )

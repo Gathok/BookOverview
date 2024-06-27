@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package de.gathok.bookoverview
 
 import android.os.Bundle
@@ -14,11 +16,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
-import de.gathok.bookoverview.add.AddBookScreen
+import de.gathok.bookoverview.add.AddScreen
 import de.gathok.bookoverview.add.AddEvent
 import de.gathok.bookoverview.add.AddState
 import de.gathok.bookoverview.add.AddViewModel
 import de.gathok.bookoverview.data.BookDatabase
+import de.gathok.bookoverview.details.DetailsEvent
+import de.gathok.bookoverview.details.DetailsScreen
+import de.gathok.bookoverview.details.DetailsState
+import de.gathok.bookoverview.details.DetailsViewModel
 import de.gathok.bookoverview.overview.OverviewEvent
 import de.gathok.bookoverview.overview.OverviewScreen
 import de.gathok.bookoverview.overview.OverviewState
@@ -53,6 +59,15 @@ class MainActivity : ComponentActivity() {
             }
         }
     )
+    private val detailsViewModel by viewModels<DetailsViewModel>(
+        factoryProducer = {
+            object : ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return DetailsViewModel(db.dao) as T
+                }
+            }
+        }
+    )
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,23 +77,35 @@ class MainActivity : ComponentActivity() {
             BookOverviewTheme {
                 val overviewState by overviewViewModel.state.collectAsState()
                 val addState by addViewModel.state.collectAsState()
-                NavGraph(overviewState, overviewViewModel::onEvent, addState, addViewModel::onEvent)
+                val detailsState by detailsViewModel.state.collectAsState()
+                NavGraph(overviewState, overviewViewModel::onEvent,
+                    addState, addViewModel::onEvent,
+                    detailsState, detailsViewModel::onEvent)
             }
         }
     }
 }
 
 @Composable
-fun NavGraph(overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Unit, addState: AddState, addEvent: (AddEvent) -> Unit){
+fun NavGraph(overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Unit,
+             addState: AddState, addEvent: (AddEvent) -> Unit,
+             detailsState: DetailsState, detailsEvent: (DetailsEvent) -> Unit)
+{
     val navController = rememberNavController()
-    NavHost(navController, startDestination = Screen.BookList.route) {
-        composable(Screen.BookList.route) {
+    NavHost(navController, startDestination = Screen.Overview.route) {
+        composable(Screen.Details.route + "/{bookId}") { backStackEntry ->
+            val arguments = backStackEntry.arguments
+            val bookIdString = arguments?.getString("bookId")
+            val bookId = bookIdString?.toInt()
+            DetailsScreen(navController, detailsState, detailsEvent, bookId)
+        }
+        composable(Screen.Overview.route) {
             // Your book list screen
             OverviewScreen(navController, overviewState, overviewEvent)
         }
-        composable(Screen.AddBook.route) {
+        composable(Screen.Add.route) {
             // Your add book screen
-            AddBookScreen(navController, addState, addEvent)
+            AddScreen(navController, addState, addEvent)
         }
     }
 }
