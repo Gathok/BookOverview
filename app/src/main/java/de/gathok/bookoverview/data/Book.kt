@@ -1,5 +1,6 @@
 package de.gathok.bookoverview.data
 
+import androidx.compose.ui.res.stringResource
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -15,14 +16,14 @@ data class Book(
     val id: Int = 0
 ) {
 
-    fun getRatingString(): String {
+    fun getRatingString(): String? {
         return when (rating) {
             1 -> "★☆☆☆☆"
             2 -> "★★☆☆☆"
             3 -> "★★★☆☆"
             4 -> "★★★★☆"
             5 -> "★★★★★"
-            else -> "No rating"
+            else -> null
         }
     }
 }

@@ -1,4 +1,18 @@
 <resources>
-    <string name="app_name">BookOverview</string>
+    <string name="app_name">Books Overview</string>
     <string name="no_rating">No rating</string>
+    <string name="not_found">Not found</string>
+    <string name="more_details_soon">More details soon.</string>
+    <string name="filter">Filter</string>
+    <string name="add_book">Add book</string>
+    <string name="owned">Owned</string>
+    <string name="read">Read</string>
+    <string name="filter_options">Filter options</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="back">Back</string>
+    <string name="submit">Submit</string>
+    <string name="title">Title</string>
+    <string name="author">Author</string>
+    <string name="isbn" translatable="false">ISBN</string>
+    <string name="rating">Rating</string>
 </resources>

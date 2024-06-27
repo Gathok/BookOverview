@@ -51,9 +51,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
@@ -77,7 +79,8 @@ fun OverviewScreen(
             onDismissRequest = { showDetailsDialog = false },
             title = { Text("Book Details") },
             text = {
-                Text("ISBN: ${detailBook?.isbn ?: "Not found"}. More details soon.")
+                Text("ISBN: ${detailBook?.isbn ?: stringResource(id = R.string.not_found )}."
+                        + stringResource(id = R.string.more_details_soon))
             },
             confirmButton = {
                 Button(onClick = { showDetailsDialog = false }) {
@@ -102,7 +105,8 @@ fun OverviewScreen(
                     1 -> state.readStatus = value
                 }
             },
-            states = listOf(state.possessionStatus, state.readStatus)
+            states = listOf(state.possessionStatus, state.readStatus),
+            itemsList = listOf(stringResource(id = R.string.owned)+":", stringResource(id = R.string.read)+":")
         )
     }
 
@@ -111,13 +115,13 @@ fun OverviewScreen(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text("Book Overview")
+                    Text(text = stringResource(id = R.string.app_name))
                 },
                 actions = {
                     IconButton(onClick = {
                         showFilterDialog = true
                     }) {
-                        Icon(Icons.Filled.Settings, contentDescription = "Filter")
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.filter))
                     }
                 }
             )
@@ -126,7 +130,7 @@ fun OverviewScreen(
             FloatingActionButton(onClick = { navController?.navigate(Screen.AddBook.route) },
                 modifier = Modifier
                     .padding(12.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Book")
+                Icon(Icons.Filled.Add, contentDescription = stringResource(id = R.string.add_book))
             }
         }
     ) { pad ->
@@ -169,7 +173,7 @@ fun BookItem(book: Book, onBookClick: (Book) -> Unit) {
                 .fillMaxWidth(1f)
         ) {
             Text(
-                text = book.getRatingString(),
+                text = book.getRatingString() ?: stringResource(id = R.string.no_rating),
                 modifier = Modifier.padding(end = 8.dp),
                 color = when (book.rating) {
                     in 1..5 -> ratingStars
@@ -192,7 +196,7 @@ fun BookItem(book: Book, onBookClick: (Book) -> Unit) {
             if (book.possessionStatus) {
                 Icon(
                     Icons.Filled.ShoppingCart,
-                    contentDescription = "Possessed",
+                    contentDescription = stringResource(id = R.string.owned),
                     tint = Color.Gray,
                 )
             } else {
@@ -203,7 +207,7 @@ fun BookItem(book: Book, onBookClick: (Book) -> Unit) {
             if (book.readStatus) {
                 Icon(
                     Icons.Filled.CheckCircle,
-                    contentDescription = "Read",
+                    contentDescription = stringResource(id = R.string.read),
                     tint = Color.Green,
                 )
             }
@@ -220,7 +224,7 @@ fun FilterDialog(
 ) {
     AlertDialog(
         onDismissRequest = {  },
-        title = { Text("Filter options") },
+        title = { Text(stringResource(id = R.string.filter_options)) },
         text = {
             Column {
                 itemsList.forEach { item ->
@@ -253,7 +257,7 @@ fun FilterDialog(
             Button(onClick = {
                 onPositiveClick()
             }) {
-                Text("Filter")
+                Text(stringResource(id = R.string.ok))
             }
         }
     )

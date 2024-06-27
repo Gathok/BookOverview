@@ -37,6 +37,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
+import de.gathok.bookoverview.R
 import de.gathok.bookoverview.ui.theme.ratingStars
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,12 +50,13 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
             CenterAlignedTopAppBar(
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
+                        )
                     }
                 },
                 title = {
                     Text(
-                        text = "Add Book",
+                        text = stringResource(id = R.string.add_book),
                         modifier = Modifier.clickable { onEvent(AddEvent.ClearFields) }
                     )
                 },
@@ -62,7 +65,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                         onEvent(AddEvent.AddBook)
                         navController.navigateUp()
                     }) {
-                        Icon(Icons.Filled.Check, contentDescription = "Submit")
+                        Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.submit))
                     }
                 }
             )
@@ -81,7 +84,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                 onValueChange = {
                     onEvent(AddEvent.TitleChanged(it))
                 },
-                label = { Text("Title") },
+                label = { Text(stringResource(R.string.title)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -91,7 +94,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                 onValueChange = {
                     onEvent(AddEvent.AuthorChanged(it))
                 },
-                label = { Text("Author") },
+                label = { Text(stringResource(R.string.author)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -101,7 +104,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                 onValueChange = {
                     onEvent(AddEvent.IsbnChanged(it))
                 },
-                label = { Text("ISBN") },
+                label = { Text(stringResource(R.string.isbn)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -118,7 +121,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                             onEvent(AddEvent.PossessionStatusChanged(it))
                         },
                     )
-                    Text("Owned")
+                    Text(stringResource(id = R.string.owned))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(
@@ -130,7 +133,7 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                             onEvent(AddEvent.ReadStatusChanged(it))
                         },
                     )
-                    Text("Read")
+                    Text(stringResource(id = R.string.read))
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column{
@@ -142,14 +145,6 @@ fun AddBookScreen(navController: NavController, state: AddState, onEvent: (AddEv
                         },
                     )
                 }
-            }
-
-            Button(onClick = {
-                onEvent(AddEvent.AddBook)
-                // redirect to book overview screen
-                navController.navigateUp()
-            }) {
-                Text("Submit")
             }
         }
     }
@@ -173,7 +168,7 @@ fun RatingBar(
             for (i in 1..max) {
                 Icon(
                     imageVector = if (i <= current) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = "Star",
+                    contentDescription = "${stringResource(id = R.string.rating)}: $i",
                     modifier = Modifier
                         .clickable { onRatingChanged(i) }
                         .padding(horizontal = 4.dp)
@@ -185,7 +180,7 @@ fun RatingBar(
         }
         Row {
             Text(
-                text = "Rating: $current",
+                text = "${stringResource(id = R.string.rating)}: $current",
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
