@@ -6,5 +6,7 @@ data class AddState(
     val isbn: String = "",
     val possessionStatus: Boolean = false,
     val readStatus: Boolean = false,
-    val rating: Int = 0
+    val rating: Int = 0,
+    val cameraPermissionGranted: Boolean = false,
+    val isScanning: Boolean = false
 )

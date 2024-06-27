@@ -20,6 +20,7 @@ import de.gathok.bookoverview.add.AddScreen
 import de.gathok.bookoverview.add.AddEvent
 import de.gathok.bookoverview.add.AddState
 import de.gathok.bookoverview.add.AddViewModel
+import de.gathok.bookoverview.add.scanner.ScannerScreen
 import de.gathok.bookoverview.data.BookDatabase
 import de.gathok.bookoverview.details.DetailsEvent
 import de.gathok.bookoverview.details.DetailsScreen
@@ -100,12 +101,16 @@ fun NavGraph(overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Uni
             DetailsScreen(navController, detailsState, detailsEvent, bookId)
         }
         composable(Screen.Overview.route) {
-            // Your book list screen
             OverviewScreen(navController, overviewState, overviewEvent)
         }
-        composable(Screen.Add.route) {
-            // Your add book screen
-            AddScreen(navController, addState, addEvent)
+        composable(Screen.Add.route + "/{isbn}") { backStackEntry ->
+            val arguments = backStackEntry.arguments
+            var isbn = arguments?.getString("isbn")
+            if (isbn == "null") isbn = null
+            AddScreen(navController, addState, addEvent, isbn)
+        }
+        composable(Screen.Scanner.route) {
+            ScannerScreen(navController)
         }
     }
 }

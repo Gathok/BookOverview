@@ -79,4 +79,16 @@ dependencies {
     implementation(libs.androidx.room.runtime.v250)
     implementation(libs.androidx.room.ktx)
     ksp("androidx.room:room-compiler:$room_version")
+
+    /// ML Kit
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
+
+    // CameraX
+    val cameraxVersion = "1.4.0-alpha02"
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.33.2-alpha")
 }

@@ -1,7 +1,11 @@
+@file:OptIn(ExperimentalPermissionsApi::class)
+
 package de.gathok.bookoverview.add
 
+import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -28,19 +33,32 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.ui.theme.ratingStars
+import de.gathok.bookoverview.util.Screen
 
+@androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit) {
+fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit,
+              isbnFromNav: String? = null) {
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -69,6 +87,13 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         }
     ) { pad ->
         val scrollState = rememberScrollState()
+        val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+        LaunchedEffect (key1 = isbnFromNav) {
+            if (isbnFromNav != null) {
+                onEvent(AddEvent.IsbnChanged(isbnFromNav))
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -103,7 +128,18 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 },
                 label = { Text(stringResource(R.string.isbn)) },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = {
+                        if (cameraPermission.status.isGranted) {
+                            navController.navigate(Screen.Scanner.route)
+                        } else {
+                            cameraPermission.launchPermissionRequest()
+                        }
+                    }) {
+                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.scan))
+                    }
+                }
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(

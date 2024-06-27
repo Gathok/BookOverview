@@ -19,4 +19,5 @@
     <string name="save">Speichern</string>
     <string name="error">Fehler</string>
     <string name="error_message">Es ist ein Problem aufgetreten. Versuche es erneut.</string>
+    <string name="scan">Scannen</string>
 </resources>

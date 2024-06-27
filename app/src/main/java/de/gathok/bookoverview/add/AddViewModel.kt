@@ -66,6 +66,9 @@ class AddViewModel (
             AddEvent.ClearFields -> {
                 _state.value = AddState()
             }
+            AddEvent.ScanIsbn -> {
+                _state.value = _state.value.copy(isScanning = true)
+            }
         }
     }
 }

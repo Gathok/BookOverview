@@ -110,7 +110,7 @@ fun OverviewScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Screen.Add.route) },
+            FloatingActionButton(onClick = { navController.navigate(Screen.Add.route +  "/null") },
                 modifier = Modifier
                     .padding(12.dp)) {
                 Icon(Icons.Filled.Add, contentDescription = stringResource(id = R.string.add_book))
@@ -350,7 +350,7 @@ fun <T> SwipeContainer(
         SwipeToDismissBox(
             state = state,
             backgroundContent = {
-                CombinedBackground(state)
+                SwipeBackground(state)
             },
             enableDismissFromStartToEnd = true,
             enableDismissFromEndToStart = true,
@@ -360,7 +360,7 @@ fun <T> SwipeContainer(
 }
 
 @Composable
-fun CombinedBackground(
+fun SwipeBackground(
     swipeToDismissBoxState: SwipeToDismissBoxState
 ) {
     val color = when (swipeToDismissBoxState.dismissDirection) {
