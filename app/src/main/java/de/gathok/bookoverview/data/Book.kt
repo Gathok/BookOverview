@@ -1,4 +1,4 @@
-package de.gathok.bookoverview
+package de.gathok.bookoverview.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -12,7 +12,7 @@ data class Book(
     var readStatus: Boolean = false,
     var rating: Int? = null,
     @PrimaryKey(autoGenerate = true)
-    val id: Int? = null
+    val id: Int = 0
 ) {
 
     fun getRatingString(): String {

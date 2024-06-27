@@ -2,7 +2,7 @@ package de.gathok.bookoverview.add
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.gathok.bookoverview.Book
+import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookDao
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

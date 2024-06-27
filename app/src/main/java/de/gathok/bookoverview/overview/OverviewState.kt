@@ -1,6 +1,6 @@
 package de.gathok.bookoverview.overview
 
-import de.gathok.bookoverview.Book
+import de.gathok.bookoverview.data.Book
 
 data class OverviewState(
     val books: List<Book> = emptyList(),

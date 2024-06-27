@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OverviewViewModel (
@@ -58,6 +59,16 @@ class OverviewViewModel (
             is OverviewEvent.ChangeFilterList -> {
                 _filterPossessionStatus.value = event.possessionStatus
                 _filterReadStatus.value = event.readStatus
+            }
+            is OverviewEvent.DeleteBook -> {
+                viewModelScope.launch {
+                    dao.deleteBook(event.book)
+                }
+            }
+            is OverviewEvent.AddBook -> {
+                viewModelScope.launch {
+                    dao.upsertBook(event.book)
+                }
             }
         }
     }

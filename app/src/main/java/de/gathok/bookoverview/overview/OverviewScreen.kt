@@ -1,9 +1,16 @@
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+
 package de.gathok.bookoverview.overview
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,8 +23,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -29,8 +36,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,10 +54,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import de.gathok.bookoverview.Book
-import de.gathok.bookoverview.add.AddEvent
+import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -57,6 +69,7 @@ fun OverviewScreen(
 ) {
     var showDetailsDialog by remember { mutableStateOf(false) }
     var detailBook by remember { mutableStateOf<Book?>(null) }
+
     var showFilterDialog by remember { mutableStateOf(false) }
 
     if (showDetailsDialog) {
@@ -122,10 +135,20 @@ fun OverviewScreen(
                 .fillMaxSize()
                 .padding(pad)
         ) {
-            items(state.books) { book ->
-                BookItem(book) { clickedBook ->
-                    detailBook = clickedBook
-                    showDetailsDialog = true
+            items(
+                items = state.books,
+                key = { it.id }
+            ) { book ->
+                SwipeToDeleteContainer(
+                    item = book,
+                    onDelete = {
+                        onEvent(OverviewEvent.DeleteBook(it))
+                    },
+                ) {
+                    BookItem(book) { clickedBook ->
+                        detailBook = clickedBook
+                        showDetailsDialog = true
+                    }
                 }
             }
         }
@@ -206,7 +229,7 @@ fun FilterDialog(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(text = item, Modifier.padding(start = 8.dp))
-                        TriStateToggle(
+                        TripleSwitch(
                             onSelectionChange = { text ->
                                 onSelectionChange(itemsList.indexOf(item), when (text.trim()) {
                                     "+" -> true
@@ -216,7 +239,7 @@ fun FilterDialog(
                                 })
                             },
                             curState = when (states[itemsList.indexOf(item)]) {
-                                true -> " +"
+                                true -> " + "
                                 false -> " - "
                                 else -> " o "
                             }
@@ -237,9 +260,9 @@ fun FilterDialog(
 }
 
 @Composable
-fun TriStateToggle(
+fun TripleSwitch(
     onSelectionChange: (String) -> Unit = {},
-    states: List<String> = listOf(" +", " o ", " - "),
+    states: List<String> = listOf(" + ", " o ", " - "),
     curState: String = " o "
 ) {
     var selectedOption by remember {
@@ -288,6 +311,74 @@ fun TriStateToggle(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun <T> SwipeToDeleteContainer(
+    item: T,
+    onDelete: (T) -> Unit,
+    animationDuration: Int = 500,
+    content: @Composable (T) -> Unit
+) {
+    var isRemoved by remember {
+        mutableStateOf(false)
+    }
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                isRemoved = true
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    LaunchedEffect(key1 = isRemoved) {
+        if(isRemoved) {
+            delay(animationDuration.toLong())
+            onDelete(item)
+        }
+    }
+
+
+    AnimatedVisibility(
+        visible = !isRemoved,
+        exit = shrinkVertically(
+            animationSpec = tween(durationMillis = animationDuration),
+            shrinkTowards = Alignment.Top
+        ) + fadeOut()
+    ) {
+        SwipeToDismissBox(
+            state = state,
+            backgroundContent = { DeleteBackground(state) },
+            enableDismissFromStartToEnd = true,
+            content = { content(item) }
+        )
+    }
+}
+
+@Composable
+fun DeleteBackground(
+    swipeToDismissBoxState: SwipeToDismissBoxState
+) {
+    val color = if (swipeToDismissBoxState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
+        Color.Red
+    } else Color.Transparent
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(16.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Icon(
+            imageVector = Icons.Default.Delete,
+            contentDescription = null,
+            tint = Color.White
+        )
     }
 }
 

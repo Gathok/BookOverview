@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
-import de.gathok.bookoverview.Book
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -15,6 +14,9 @@ interface BookDao{
 
     @Delete
     suspend fun deleteBook(book: Book)
+
+    @Query("DELETE FROM book WHERE id = :id")
+    suspend fun deleteBookById(id: Int)
 
     @Query("SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
             " AND (:isRead IS NULL OR readStatus = :isRead) ORDER BY :sortType ASC")
