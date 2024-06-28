@@ -16,24 +16,55 @@ class OverviewViewModel (
     private val dao: BookDao
 ): ViewModel() {
 
-    private val _sortType = MutableStateFlow(SortType.TITLE)
     private val _filterPossessionStatus = MutableStateFlow<Boolean?>(null)
     private val _filterReadStatus = MutableStateFlow<Boolean?>(null)
-    private val _filterList = combine(_filterPossessionStatus, _filterReadStatus, _sortType) { possessionStatus, readStatus, sortType ->
+
+    private val _sortType = MutableStateFlow(SortType.TITLE)
+
+    private val _searchQuery = MutableStateFlow("")
+    private val _searchType = MutableStateFlow(SearchType.TITLE)
+
+    private val _filterList = combine(_filterPossessionStatus, _filterReadStatus, _sortType,
+        _searchQuery, _searchType) { possessionStatus, readStatus, sortType, searchQuery, searchType ->
         listOf(
             possessionStatus,
             readStatus,
-            sortType
+            sortType,
+            searchQuery,
+            searchType
         )
     }
 
     private val _books = _filterList
-        .flatMapLatest { filters ->
-            when (filters[2]) {
-                SortType.AUTHOR -> dao.getBooks(filters[0] as Boolean?, filters[1] as Boolean?, "author")
-                else -> dao.getBooks(filters[0] as Boolean?, filters[1] as Boolean?, "title")
-            }
+    .flatMapLatest { filters ->
+        val possessionStatus = filters[0] as Boolean?
+        val readStatus = filters[1] as Boolean?
+        val sortType = (filters[2] as SortType).queryValue
+        val searchQuery = filters[3] as String
+        val searchType = filters[4] as SearchType
+
+        when (searchType) {
+            SearchType.TITLE -> dao.getBooksByTitle(
+                possessionStatus,
+                readStatus,
+                sortType,
+                searchQuery
+            )
+            SearchType.AUTHOR -> dao.getBooksByAuthor(
+                possessionStatus,
+                readStatus,
+                sortType,
+                searchQuery
+            )
+            SearchType.ISBN -> dao.getBooksByIsbn(
+                possessionStatus,
+                readStatus,
+                sortType,
+                searchQuery
+            )
         }
+    }
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
     private val _state = MutableStateFlow(OverviewState())
     val state = combine(_state, _sortType, _books) { state, sortType, books ->
@@ -69,6 +100,10 @@ class OverviewViewModel (
                 viewModelScope.launch {
                     dao.upsertBook(event.book)
                 }
+            }
+            is OverviewEvent.ChangeSearchQuery -> {
+                _searchQuery.value = event.searchQuery
+                _state.value = _state.value.copy(searchQuery = event.searchQuery)
             }
         }
     }

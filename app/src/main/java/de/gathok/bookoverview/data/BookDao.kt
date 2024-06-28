@@ -24,4 +24,22 @@ interface BookDao{
     @Query("SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
             " AND (:isRead IS NULL OR readStatus = :isRead) ORDER BY :sortType ASC")
     fun getBooks(isOwned: Boolean?, isRead: Boolean?, sortType: String): Flow<List<Book>>
+
+    @Query("SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+            " AND title LIKE '%' || :searchQuery || '%'" +
+            " ORDER BY :sortType ASC")
+    fun getBooksByTitle(isOwned: Boolean?, isRead: Boolean?, sortType: String, searchQuery: String): Flow<List<Book>>
+
+    @Query("SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+            " AND author LIKE '%' || :searchQuery || '%'" +
+            " ORDER BY :sortType ASC")
+    fun getBooksByAuthor(isOwned: Boolean?, isRead: Boolean?, sortType: String, searchQuery: String): Flow<List<Book>>
+
+    @Query("SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+            " AND isbn LIKE '%' || :searchQuery || '%'" +
+            " ORDER BY :sortType ASC")
+    fun getBooksByIsbn(isOwned: Boolean?, isRead: Boolean?, sortType: String, searchQuery: String): Flow<List<Book>>
 }

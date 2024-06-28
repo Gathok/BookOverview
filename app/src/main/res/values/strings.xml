@@ -21,5 +21,7 @@
     <string name="error">Error</string>
     <string name="error_message">There was a problem. Try again.</string>
     <string name="scan">Scan</string>
-    <string name="google_api_key">AIzaSyDy8e3svqe3-PG8uX-VKSbp4OepITwZpbk</string>
+    <string name="google_api_key" translatable="false">AIzaSyDy8e3svqe3-PG8uX-VKSbp4OepITwZpbk</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
 </resources>

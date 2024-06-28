@@ -20,4 +20,6 @@
     <string name="error">Fehler</string>
     <string name="error_message">Es ist ein Problem aufgetreten. Versuche es erneut.</string>
     <string name="scan">Scannen</string>
+    <string name="search">Suchen</string>
+    <string name="settings">Einstellungen</string>
 </resources>

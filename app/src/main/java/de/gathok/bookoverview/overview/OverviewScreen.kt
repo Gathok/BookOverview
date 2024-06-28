@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
@@ -42,6 +45,8 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -102,9 +107,9 @@ fun OverviewScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        showFilterDialog = true
+                        // TODO("Show settings")
                     }) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.filter))
+                        Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.settings))
                     }
                 }
             )
@@ -117,25 +122,50 @@ fun OverviewScreen(
             }
         }
     ) { pad ->
-        LazyColumn (
+        Column (
             modifier = Modifier
-                .fillMaxSize()
                 .padding(pad)
         ) {
-            items(
-                items = state.books,
-                key = { it.id }
-            ) { book ->
-                SwipeContainer(
-                    item = book,
-                    onDetails = {
-                        navController.navigate("${Screen.Details.route}/${it.id}")
-                    },
-                    onDelete = {
-                        onEvent(OverviewEvent.DeleteBook(it))
-                    },
-                ) {
-                    BookItem(book)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                SearchBar(
+                    value = state.searchQuery,
+                    onValueChange = { onEvent(OverviewEvent.ChangeSearchQuery(it)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
+                )
+                IconButton(onClick = {
+                    showFilterDialog = true
+                }) {
+                    Icon(Icons.Filled.MoreVert, contentDescription = stringResource(id = R.string.filter))
+                }
+            }
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                items(
+                    items = state.books,
+                    key = { it.id }
+                ) { book ->
+                    SwipeContainer(
+                        item = book,
+                        onDetails = {
+                            navController.navigate("${Screen.Details.route}/${it.id}")
+                        },
+                        onDelete = {
+                            onEvent(OverviewEvent.DeleteBook(it))
+                        },
+                    ) {
+                        BookItem(book)
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.height(128.dp))
                 }
             }
         }
@@ -394,6 +424,29 @@ fun SwipeBackground(
             tint = Color.White
         )
     }
+}
+
+@Composable
+fun SearchBar(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    hint: String = stringResource(R.string.search)
+) {
+    TextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier,
+        placeholder = { Text(text = hint) },
+        leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search)) },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent
+        ),
+    )
 }
 
 //@Preview(showBackground = true, name = "BookOverviewScreen", group = "MainActivity")

@@ -9,4 +9,5 @@ sealed interface OverviewEvent {
     data class ChangeSortType(val sortType: SortType): OverviewEvent
     data class DeleteBook(val book: Book): OverviewEvent
     data class AddBook(val book: Book): OverviewEvent
+    data class ChangeSearchQuery(val searchQuery: String): OverviewEvent
 }
