@@ -3,7 +3,9 @@
 package de.gathok.bookoverview.add
 
 import androidx.camera.core.ExperimentalGetImage
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -82,12 +84,13 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
     ) { pad ->
         val scrollState = rememberScrollState()
         val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
+        val apiKey = stringResource(R.string.google_api_key)
 
         LaunchedEffect (key1 = isbnFromNav) {
             if (isbnFromNav != null) {
                 onEvent(AddEvent.IsbnChanged(isbnFromNav))
                 val bookResponse = BookModel.bookService.getBook(
-                    apiKey = "AIzaSyDy8e3svqe3-PG8uX-VKSbp4OepITwZpbk",
+                    apiKey = apiKey,
                     isbn = isbnFromNav
                 )
                 val title = bookResponse.items[0].volumeInfo.title
@@ -190,6 +193,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RatingBar(
     max: Int = 5,
@@ -209,13 +213,20 @@ fun RatingBar(
             for (i in 1..max) {
                 Icon(
                     imageVector = if (i <= current) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = "${stringResource(id = R.string.rating)}: $i",
+                    contentDescription = "${stringResource(R.string.rating)}: $i",
                     modifier = Modifier
-                        .clickable {
-                            if (enabled) {
-                                onRatingChanged(i)
+                        .combinedClickable(
+                            onClick = {
+                                if (enabled) {
+                                    onRatingChanged(i)
+                                }
+                            },
+                            onLongClick = {
+                                if (enabled) {
+                                    onRatingChanged(0)
+                                }
                             }
-                        }
+                        )
                         .padding(horizontal = 4.dp)
                         .weight(1f) // This will divide the available space equally between the stars
                         .aspectRatio(1f), // This will make the stars square
@@ -225,7 +236,10 @@ fun RatingBar(
         }
         Row {
             Text(
-                text = "${stringResource(id = R.string.rating)}: $current",
+                text = when(current) {
+                    0 -> stringResource(R.string.no_rating)
+                    else -> "${stringResource(R.string.rating)}: $current★"
+                },
                 modifier = Modifier.padding(top = 8.dp)
             )
         }
