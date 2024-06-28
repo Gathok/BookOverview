@@ -5,7 +5,6 @@ package de.gathok.bookoverview.add
 import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,8 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -37,13 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -51,6 +44,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
+import de.gathok.bookoverview.add.api.BookModel
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
 
@@ -64,7 +58,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { navController.navigate(Screen.Overview.route) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -78,7 +72,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 actions = {
                     IconButton(onClick = {
                         onEvent(AddEvent.AddBook)
-                        navController.navigateUp()
+                        navController.navigate(Screen.Overview.route)
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.submit))
                     }
@@ -92,6 +86,19 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         LaunchedEffect (key1 = isbnFromNav) {
             if (isbnFromNav != null) {
                 onEvent(AddEvent.IsbnChanged(isbnFromNav))
+                val bookResponse = BookModel.bookService.getBook(
+                    apiKey = "AIzaSyDy8e3svqe3-PG8uX-VKSbp4OepITwZpbk",
+                    isbn = isbnFromNav
+                )
+                val title = bookResponse.items[0].volumeInfo.title
+                val authors = bookResponse.items[0].volumeInfo.authors
+                try {
+                    onEvent(AddEvent.TitleChanged(title))
+                    onEvent(AddEvent.AuthorChanged(authors[0]))
+                } catch (e: Exception) {
+                    // Do nothing
+
+                }
             }
         }
 
@@ -137,7 +144,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                             cameraPermission.launchPermissionRequest()
                         }
                     }) {
-                        Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.scan))
+                        Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.scan))
                     }
                 }
             )

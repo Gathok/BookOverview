@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.add.RatingBar
+import de.gathok.bookoverview.util.Screen
 
 
 @Composable
@@ -48,10 +49,10 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
         AlertDialog(
             title = { Text(stringResource(R.string.error)) },
             text = { Text(stringResource(R.string.error_message)) },
-            onDismissRequest = { navController.navigateUp() },
+            onDismissRequest = { navController.navigate(Screen.Overview.route) },
             confirmButton = {
                 Button(
-                    onClick = { navController.navigateUp() }) {
+                    onClick = { navController.navigate(Screen.Overview.route) }) {
                     Text("OK")
                 }
             }
@@ -73,7 +74,7 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
             CenterAlignedTopAppBar(
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigateUp()
+                        navController.navigate(Screen.Overview.route)
                         onEvent(DetailsEvent.ResetState)
                     }) {
                         Icon(
