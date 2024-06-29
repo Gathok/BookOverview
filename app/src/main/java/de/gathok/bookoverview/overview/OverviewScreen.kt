@@ -86,6 +86,8 @@ fun OverviewScreen(
     onEvent: (OverviewEvent) -> Unit
 ) {
     var showFilterDialog by remember { mutableStateOf(false) }
+    var deletedBook by remember { mutableStateOf<Book?>(null) }
+    var showDeleteRestoreDialog by remember { mutableStateOf(false) }
 
     if (showFilterDialog) {
         FilterDialog(
@@ -143,6 +145,31 @@ fun OverviewScreen(
         )
     }
 
+    if (showDeleteRestoreDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteRestoreDialog = false },
+            title = { Text(stringResource(id = R.string.book_deleted)) },
+            text = { Text(stringResource(id = R.string.book_deleted_msg, deletedBook?.title ?: "")) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteRestoreDialog = false
+                        onEvent(OverviewEvent.AddBook(deletedBook!!))
+                    }
+                ) {
+                    Text(stringResource(id = R.string.yes_restore))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showDeleteRestoreDialog = false }
+                ) {
+                    Text(stringResource(id = R.string.no))
+                }
+            }
+        )
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -168,7 +195,7 @@ fun OverviewScreen(
                     contentDescription = stringResource(id = R.string.add_book),
                     modifier = Modifier
                         .padding(16.dp)
-                        .combinedClickable (
+                        .combinedClickable(
                             onClick = {
                                 navController.navigate(Screen.Add.route + "/null")
                             },
@@ -217,9 +244,24 @@ fun OverviewScreen(
                         },
                         onDelete = {
                             onEvent(OverviewEvent.DeleteBook(it))
+                            deletedBook = it
+                            showDeleteRestoreDialog = true
                         },
                     ) {
                         BookItem(book)
+                    }
+                }
+                item {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.book_count, state.books.size),
+                            fontSize = 10.sp,
+                        )
                     }
                 }
                 item {
@@ -480,7 +522,7 @@ fun <T> SwipeContainer(
             when (value) {
                 SwipeToDismissBoxValue.EndToStart -> {
                     isRemoved = true
-                    true
+                    false
                 }
                 SwipeToDismissBoxValue.StartToEnd -> {
                     isDetails = true
