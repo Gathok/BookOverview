@@ -22,4 +22,7 @@
     <string name="scan">Scannen</string>
     <string name="search">Suchen</string>
     <string name="settings">Einstellungen</string>
+    <string name="search_by">Suchen nach</string>
+    <string name="sort_by">Sortieren nach</string>
+    <string name="error_msg_scan">Scannen fehlgeschlagen. Erneut versuchen oder Buch manuell hinzufügen.</string>
 </resources>

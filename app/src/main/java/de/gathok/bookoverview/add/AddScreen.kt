@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,8 +34,13 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,25 +90,37 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
     ) { pad ->
         val scrollState = rememberScrollState()
         val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
-        val apiKey = stringResource(R.string.google_api_key)
+
+        var showScanError by remember { mutableStateOf(false) }
 
         LaunchedEffect (key1 = isbnFromNav) {
             if (isbnFromNav != null) {
                 onEvent(AddEvent.IsbnChanged(isbnFromNav))
                 val bookResponse = BookModel.bookService.getBook(
-                    apiKey = apiKey,
-                    isbn = isbnFromNav
+                    isbn = "isbn:$isbnFromNav"
                 )
-                val title = bookResponse.items[0].volumeInfo.title
-                val authors = bookResponse.items[0].volumeInfo.authors
                 try {
-                    onEvent(AddEvent.TitleChanged(title))
-                    onEvent(AddEvent.AuthorChanged(authors[0]))
+                    onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
+                    onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors[0]))
                 } catch (e: Exception) {
-                    // Do nothing
-
+                    showScanError = true
                 }
             }
+        }
+
+        if (showScanError) {
+            AlertDialog(
+                onDismissRequest = {
+                    showScanError = false
+                },
+                confirmButton = {
+                    TextButton(onClick = { showScanError = false }) {
+                        Text(stringResource(R.string.ok))
+                    }
+                },
+                title = { Text(stringResource(R.string.error)) },
+                text = { Text(stringResource(R.string.error_msg_scan)) }
+            )
         }
 
         Column(

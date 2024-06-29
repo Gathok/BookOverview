@@ -34,11 +34,16 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
@@ -84,17 +89,53 @@ fun OverviewScreen(
                 showFilterDialog = false
                 onEvent(OverviewEvent.ChangeFilterList(
                     state.possessionStatus,
-                    state.readStatus
+                    state.readStatus,
+                    state.sortType,
+                    state.searchType
                 ))
             },
-            onSelectionChange = { index, value ->
+            onFilterChange = { index, value ->
                 when (index) {
                     0 -> state.possessionStatus = value
                     1 -> state.readStatus = value
                 }
             },
-            states = listOf(state.possessionStatus, state.readStatus),
-            itemsList = listOf(stringResource(id = R.string.owned)+":", stringResource(id = R.string.read)+":")
+            onTypeChange = { index, value ->
+                when (index) {
+                    0 -> {
+                        state.sortType = when (value) {
+                            0 -> SortType.TITLE
+                            1 -> SortType.AUTHOR
+                            else -> SortType.TITLE
+                        }
+                    }
+                    1 -> {
+                        state.searchType = when (value) {
+                            0 -> SearchType.TITLE
+                            1 -> SearchType.AUTHOR
+                            2 -> SearchType.ISBN
+                            else -> SearchType.TITLE
+                        }
+                    }
+                }
+            },
+            filterItemsList = listOf(stringResource(id = R.string.owned)+":", stringResource(id = R.string.read)+":"),
+            typeItemsList = mapOf(
+                stringResource(id = R.string.sort_by)+":" to listOf(stringResource(id = R.string.title), stringResource(id = R.string.author)),
+                stringResource(id = R.string.search_by)+":" to listOf(stringResource(id = R.string.title), stringResource(id = R.string.author), stringResource(id = R.string.isbn))
+            ),
+            filterStates = listOf(state.possessionStatus, state.readStatus),
+            typeStates = listOf(
+                when(state.sortType) {
+                    SortType.TITLE -> stringResource(id = R.string.title)
+                    SortType.AUTHOR -> stringResource(id = R.string.author)
+                },
+                when(state.searchType) {
+                    SearchType.TITLE -> stringResource(id = R.string.title)
+                    SearchType.AUTHOR -> stringResource(id = R.string.author)
+                    SearchType.ISBN -> stringResource(id = R.string.isbn)
+                }
+            )
         )
     }
 
@@ -231,34 +272,61 @@ fun BookItem(book: Book) {
 @Composable
 fun FilterDialog(
     onPositiveClick: () -> Unit,
-    onSelectionChange: (Int, Boolean?) -> Unit,
-    itemsList: List<String> = listOf("Owned:", "Read:"),
-    states: List<Boolean?> = listOf(null, null)
+    onFilterChange: (Int, Boolean?) -> Unit,
+    onTypeChange: (Int, Int) -> Unit,
+    filterItemsList: List<String>,
+    typeItemsList: Map<String, List<String>>,
+    filterStates: List<Boolean?>,
+    typeStates: List<String>
 ) {
     AlertDialog(
         onDismissRequest = {  },
         title = { Text(stringResource(id = R.string.filter_options)) },
         text = {
             Column {
-                itemsList.forEach { item ->
+                filterItemsList.forEach { item ->
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = item, Modifier.padding(start = 8.dp))
+                        Text(
+                            text = item,
+                            fontSize = 16.sp
+                        )
                         TripleSwitch(
                             onSelectionChange = { text ->
-                                onSelectionChange(itemsList.indexOf(item), when (text.trim()) {
+                                onFilterChange(filterItemsList.indexOf(item), when (text.trim()) {
                                     "+" -> true
                                     "o" -> null
                                     "-" -> false
                                     else -> null
                                 })
                             },
-                            curState = when (states[itemsList.indexOf(item)]) {
+                            curState = when (filterStates[filterItemsList.indexOf(item)]) {
                                 true -> " + "
                                 false -> " - "
                                 else -> " o "
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(4.dp))
+                }
+                typeItemsList.forEach { (label, options) ->
+                    var selectedOption by remember {
+                        mutableStateOf(typeStates[typeItemsList.keys.indexOf(label)])
+                    }
+
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        DynamicSelectTextField(
+                            selectedOption = selectedOption,
+                            options = options,
+                            label = label,
+                            onValueChanged = { text ->
+                                selectedOption = text
+                                onTypeChange(typeItemsList.keys.indexOf(label), options.indexOf(text))
                             }
                         )
                     }
@@ -275,6 +343,62 @@ fun FilterDialog(
         }
     )
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DynamicSelectTextField(
+    selectedOption: String,
+    options: List<String>,
+    label: String,
+    onValueChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            readOnly = true,
+            value = selectedOption,
+            onValueChange = {},
+            label = { Text(text = label) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = OutlinedTextFieldDefaults.colors(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth()
+        )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option: String ->
+                DropdownMenuItem(
+                    text = { Text(text = option) },
+                    onClick = {
+                        expanded = false
+                        onValueChanged(option)
+                    }
+                )
+            }
+        }
+    }
+}
+
+//@Preview(showBackground = true)
+//@Composable
+//fun FilterDialogPreview() {
+//    FilterDialog(
+//        onPositiveClick = { /*TODO*/ },
+//        onFilterChange = { _, _ -> /*TODO*/ },
+//        onTypeChange = { _, _ -> /*TODO*/ },
+//        filterItemsList = listOf("Owned:", "Read:"),
+//        filterStates = listOf(null, null)
+//    )
+//}
 
 @Composable
 fun TripleSwitch(
@@ -325,6 +449,7 @@ fun TripleSwitch(
                             vertical = 0.dp,
                             horizontal = 3.dp,
                         ),
+                    fontSize = 16.sp
                 )
             }
         }
@@ -414,15 +539,17 @@ fun SwipeBackground(
             else -> Alignment.Center
         }
     ) {
-        Icon(
-            imageVector = when (swipeToDismissBoxState.dismissDirection) {
-                SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Info
-                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
-                else -> Icons.Default.Settings
-            },
-            contentDescription = null,
-            tint = Color.White
-        )
+        if (swipeToDismissBoxState.dismissDirection != SwipeToDismissBoxValue.Settled) {
+            Icon(
+                imageVector = when (swipeToDismissBoxState.dismissDirection) {
+                    SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Info
+                    SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                    SwipeToDismissBoxValue.Settled -> Icons.Default.Info
+                },
+                contentDescription = null,
+                tint = Color.White
+            )
+        }
     }
 }
 

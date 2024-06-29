@@ -4,10 +4,10 @@ import de.gathok.bookoverview.data.Book
 
 data class OverviewState(
     val books: List<Book> = emptyList(),
-    val sortType: SortType = SortType.TITLE,
+    var sortType: SortType = SortType.TITLE,
     var possessionStatus: Boolean? = null,
     var readStatus: Boolean? = null,
 
     val searchQuery: String = "",
-    val searchType: SearchType = SearchType.TITLE,
+    var searchType: SearchType = SearchType.TITLE,
 )

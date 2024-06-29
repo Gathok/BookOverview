@@ -7,6 +7,5 @@ interface BookService {
     @GET("volumes")
     suspend fun getBook(
         @Query("q") isbn:String,
-        @Query("key") apiKey:String,
     ): BookResponse
 }

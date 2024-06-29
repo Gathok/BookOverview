@@ -2,6 +2,7 @@ package de.gathok.bookoverview.overview
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.sqlite.db.SimpleSQLiteQuery
 import de.gathok.bookoverview.data.BookDao
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,36 +42,26 @@ class OverviewViewModel (
         val readStatus = filters[1] as Boolean?
         val sortType = (filters[2] as SortType).queryValue
         val searchQuery = filters[3] as String
-        val searchType = filters[4] as SearchType
+        val searchType = (filters[4] as SearchType).queryValue
 
-        when (searchType) {
-            SearchType.TITLE -> dao.getBooksByTitle(
-                possessionStatus,
-                readStatus,
-                sortType,
-                searchQuery
-            )
-            SearchType.AUTHOR -> dao.getBooksByAuthor(
-                possessionStatus,
-                readStatus,
-                sortType,
-                searchQuery
-            )
-            SearchType.ISBN -> dao.getBooksByIsbn(
-                possessionStatus,
-                readStatus,
-                sortType,
-                searchQuery
-            )
-        }
+        val query = SimpleSQLiteQuery(
+            "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+                    " AND (:isRead IS NULL OR readStatus = :isRead)" +
+                    " AND $searchType LIKE '%' || :searchQuery || '%'" +
+                    " ORDER BY $sortType COLLATE NOCASE ASC",
+            arrayOf(possessionStatus, readStatus, searchQuery)
+        )
+
+        dao.rawQuery(query)
     }
     .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
     private val _state = MutableStateFlow(OverviewState())
-    val state = combine(_state, _sortType, _books) { state, sortType, books ->
+    val state = combine(_state, _books) { state, books ->
             state.copy(
                 books = books,
-                sortType = sortType,
+                sortType = _sortType.value,
+                searchType = _searchType.value,
                 possessionStatus = _filterPossessionStatus.value,
                 readStatus = _filterReadStatus.value
             )
@@ -78,18 +69,11 @@ class OverviewViewModel (
 
     fun onEvent(event: OverviewEvent) {
         when (event) {
-            is OverviewEvent.ChangePossessionStatus -> {
-                _filterPossessionStatus.value = event.possessionStatus
-            }
-            is OverviewEvent.ChangeReadStatus -> {
-                _filterReadStatus.value = event.readStatus
-            }
-            is OverviewEvent.ChangeSortType -> {
-                _sortType.value = event.sortType
-            }
             is OverviewEvent.ChangeFilterList -> {
                 _filterPossessionStatus.value = event.possessionStatus
                 _filterReadStatus.value = event.readStatus
+                _sortType.value = event.sortType
+                _searchType.value = event.searchType
             }
             is OverviewEvent.DeleteBook -> {
                 viewModelScope.launch {
