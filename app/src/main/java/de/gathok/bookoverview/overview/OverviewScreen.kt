@@ -1,4 +1,6 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalFoundationApi::class
+)
 
 package de.gathok.bookoverview.overview
 
@@ -7,8 +9,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -156,10 +160,23 @@ fun OverviewScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Screen.Add.route +  "/null") },
-                modifier = Modifier
-                    .padding(12.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = stringResource(id = R.string.add_book))
+            FloatingActionButton(
+                onClick = {  }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = stringResource(id = R.string.add_book),
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .combinedClickable (
+                            onClick = {
+                                navController.navigate(Screen.Add.route + "/null")
+                            },
+                            onLongClick = {
+                                navController.navigate(Screen.Scanner.route)
+                            }
+                        )
+                )
             }
         }
     ) { pad ->
@@ -388,18 +405,6 @@ fun DynamicSelectTextField(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun FilterDialogPreview() {
-//    FilterDialog(
-//        onPositiveClick = { /*TODO*/ },
-//        onFilterChange = { _, _ -> /*TODO*/ },
-//        onTypeChange = { _, _ -> /*TODO*/ },
-//        filterItemsList = listOf("Owned:", "Read:"),
-//        filterStates = listOf(null, null)
-//    )
-//}
-
 @Composable
 fun TripleSwitch(
     onSelectionChange: (String) -> Unit = {},
@@ -579,10 +584,22 @@ fun SearchBar(
 //@Preview(showBackground = true, name = "BookOverviewScreen", group = "MainActivity")
 //@Composable
 //fun BookOverviewScreenPreview() {
-//    FilterDialog(
-//        showDialog = remember { mutableStateOf(true) },
-//        onPositiveClick = {},
-//        onNegativeClick = {},
-//        onItemChecked = { _, _ -> }
-//    )
+//    FloatingActionButton(
+//        onClick = {  }
+//    ) {
+//        Icon(
+//            imageVector = Icons.Filled.Add,
+//            contentDescription = stringResource(id = R.string.add_book),
+//            modifier = Modifier
+//                .padding(16.dp)
+//                .combinedClickable (
+//                    onClick = {
+////                        navController.navigate(Screen.Add.route + "/null")
+//                    },
+//                    onLongClick = {
+////                        navController.navigate(Screen.Scanner.route)
+//                    }
+//                )
+//        )
+//    }
 //}
