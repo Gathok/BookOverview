@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -25,6 +26,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -74,6 +76,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
 fun DetailsScreenContent(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit) {
 
     var showConfirmLeaveDialog by remember { mutableStateOf(false) }
+    var showNoTitleDialog by remember { mutableStateOf(false) }
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -97,9 +100,7 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                     }
                 },
                 title = {
-                    Text(
-                        text = stringResource(id = R.string.book_details)
-                    )
+                    Text(text = stringResource(id = R.string.book_details))
                 },
                 actions = {
                     if (!state.isEditing) {
@@ -108,8 +109,12 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                         }
                     } else {
                         IconButton(onClick = {
-                            onEvent(DetailsEvent.UpdateBook)
-                            onEvent(DetailsEvent.SwitchEditing)
+                            if (state.title.isBlank()) {
+                                showNoTitleDialog = true
+                            } else {
+                                onEvent(DetailsEvent.UpdateBook)
+                                onEvent(DetailsEvent.SwitchEditing)
+                            }
                         }) {
                             Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.save))
                         }
@@ -122,24 +127,49 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
 
         if (showConfirmLeaveDialog) {
             AlertDialog(
-                title = { Text(stringResource(R.string.error_confirm_leave)) },
-                text = { Text(stringResource(R.string.error_msg_confirm_leave)) },
+                title = { Text(stringResource(R.string.error_save_changes)) },
+                text = { Text(stringResource(R.string.error_msg_save_changes)) },
                 onDismissRequest = { showConfirmLeaveDialog = false },
                 confirmButton = {
+                    Button(
+                        onClick = {
+                            if (state.title.isBlank()) {
+                                showConfirmLeaveDialog = false
+                                showNoTitleDialog = true
+                            } else {
+                                onEvent(DetailsEvent.UpdateBook)
+                                onEvent(DetailsEvent.SwitchEditing)
+                                navController.navigate(Screen.Overview.route)
+                                onEvent(DetailsEvent.ResetState)
+                            }
+                        }
+                    ) {
+                        Text(stringResource(R.string.yes_save))
+                    }
+                },
+                dismissButton = {
                     Button(
                         onClick = {
                             navController.navigate(Screen.Overview.route)
                             onEvent(DetailsEvent.ResetState)
                         }
                     ) {
-                        Text(stringResource(R.string.yes_leave))
+                        Text(stringResource(R.string.no))
                     }
-                },
-                dismissButton = {
+                }
+            )
+        }
+
+        if (showNoTitleDialog) {
+            AlertDialog(
+                title = { Text(stringResource(R.string.error)) },
+                text = { Text(stringResource(R.string.error_msg_no_title)) },
+                onDismissRequest = { showNoTitleDialog = false },
+                confirmButton = {
                     Button(
-                        onClick = { showConfirmLeaveDialog = false }
+                        onClick = { showNoTitleDialog = false }
                     ) {
-                        Text(stringResource(R.string.no_stay))
+                        Text(stringResource(R.string.ok))
                     }
                 }
             )
@@ -179,6 +209,22 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 enabled = state.isEditing
             )
             Spacer(modifier = Modifier.height(16.dp))
+            if (state.isDoubleIsbn) {
+                Row (
+                    Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = stringResource(R.string.is_double_isbn),
+                        modifier = Modifier.padding(end = 8.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = stringResource(R.string.is_double_isbn),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
             OutlinedTextField(
                 value = state.isbn,
                 onValueChange = {

@@ -55,11 +55,19 @@ class DetailsViewModel (
                 }
             }
             is DetailsEvent.IsbnChanged -> {
-                _state.value = _state.value.copy(isbn = event.isbn)
-                if (event.isbn != _state.value.book?.isbn) {
+                val newIsbn = event.isbn
+                _state.value = _state.value.copy(isbn = newIsbn)
+                if (newIsbn != _state.value.book?.isbn) {
                     _state.value = _state.value.copy(isbnChanged = true)
                 } else {
                     _state.value = _state.value.copy(isbnChanged = false)
+                }
+                //check if isbn is already in the database
+                viewModelScope.launch {
+                    dao.getBookByIsbn(newIsbn).collect { book ->
+                        _state.value = _state.value
+                            .copy(isDoubleIsbn = (book != null && book.id != _state.value.bookId))
+                    }
                 }
             }
             is DetailsEvent.PossessionStatusChanged -> {
@@ -101,7 +109,7 @@ class DetailsViewModel (
                 val readStatus = _state.value.readStatus
                 val rating = _state.value.rating
 
-                if (title.isBlank() || author.isBlank() || isbn.isBlank()) {
+                if (title.isBlank()) {
                     return
                 }
 
@@ -121,6 +129,16 @@ class DetailsViewModel (
                 viewModelScope.launch {
                     dao.upsertBook(book)
                 }
+
+                _state.value = _state.value.copy(
+                    book = book,
+                    titleChanged = false,
+                    authorChanged = false,
+                    isbnChanged = false,
+                    possessionStatusChanged = false,
+                    readStatusChanged = false,
+                    ratingChanged = false
+                )
             }
             DetailsEvent.ResetState -> {
                 _state.value = DetailsState()

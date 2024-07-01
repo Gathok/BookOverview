@@ -17,5 +17,6 @@ data class DetailsState(
     val readStatusChanged: Boolean = false,
     val rating: Int = 0,
     val ratingChanged: Boolean = false,
-    val isEditing: Boolean = false
+    val isEditing: Boolean = false,
+    val isDoubleIsbn: Boolean = false,
 )

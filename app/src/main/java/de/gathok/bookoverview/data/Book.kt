@@ -1,6 +1,5 @@
 package de.gathok.bookoverview.data
 
-import androidx.compose.ui.res.stringResource
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

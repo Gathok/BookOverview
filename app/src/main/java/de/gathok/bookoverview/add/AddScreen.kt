@@ -118,7 +118,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                         if (state.title.trim().isBlank() || state.author.trim().isBlank() || state.isbn.trim().isBlank()) {
                             if (state.title.trim().isBlank()) {
                                 errorTitleResource = R.string.error_add
-                                errorMessageResource = R.string.error_msg_add
+                                errorMessageResource = R.string.error_msg_no_title
                                 showError = true
                             } else {
                                 showIncompleteError = true

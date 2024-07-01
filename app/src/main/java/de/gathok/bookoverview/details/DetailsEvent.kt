@@ -10,8 +10,8 @@ sealed class DetailsEvent {
     data class ReadStatusChanged(val readStatus: Boolean): DetailsEvent()
     data class RatingChanged(val rating: Int): DetailsEvent()
 
-    object SwitchEditing: DetailsEvent()
+    data object SwitchEditing: DetailsEvent()
 
-    object UpdateBook: DetailsEvent()
-    object ResetState: DetailsEvent()
+    data object UpdateBook: DetailsEvent()
+    data object ResetState: DetailsEvent()
 }

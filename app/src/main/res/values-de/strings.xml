@@ -30,7 +30,7 @@
     <string name="yes_restore">Ja, wiederherstellen</string>
     <string name="no">Nein</string>
     <string name="book_count">Gezeigte Bücher: %1$s</string>
-    <string name="error_msg_add">Buch Titel muss gesetzt sein.</string>
+    <string name="error_msg_no_title">Buch Titel muss gesetzt sein.</string>
     <string name="error_scan">Fehler beim Scannen</string>
     <string name="error_msg_scan_author">Kein Author gefunden. Bitte manuell eintragen.</string>
     <string name="error_add">Fehler beim hinzufügen</string>
@@ -38,8 +38,7 @@
     <string name="data_incomplete">Daten unvollständig</string>
     <string name="yes">Ja</string>
     <string name="is_double_isbn">Die ISBN ist bereits in der Datenbank vorhanden.</string>
-    <string name="error_confirm_leave">Verlassen ohne zu speichern?</string>
-    <string name="error_msg_confirm_leave">Ungespeicherte Änderungen werden verfallen.\\nMöchten Sie dennoch die Bearbeitung verlassen?</string>
-    <string name="yes_leave">Ja, verlassen</string>
-    <string name="no_stay">Nein, bleiben</string>
+    <string name="error_save_changes">Änderungen speichern?</string>
+    <string name="error_msg_save_changes">Änderungen vorm Verlassen speichern?</string>
+    <string name="yes_save">Ja, speichern</string>
 </resources>
