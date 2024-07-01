@@ -30,6 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,14 +72,23 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DetailsScreenContent(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit) {
+
+    var showConfirmLeaveDialog by remember { mutableStateOf(false) }
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
                     IconButton(onClick = {
-                        navController.navigate(Screen.Overview.route)
-                        onEvent(DetailsEvent.ResetState)
+                        if (state.isEditing &&
+                            (state.titleChanged || state.authorChanged || state.isbnChanged ||
+                                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged)) {
+                            showConfirmLeaveDialog = true
+                        } else {
+                            navController.navigate(Screen.Overview.route)
+                            onEvent(DetailsEvent.ResetState)
+                        }
                     }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
@@ -107,6 +120,31 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
     ) {  pad ->
         val scrollState = rememberScrollState()
 
+        if (showConfirmLeaveDialog) {
+            AlertDialog(
+                title = { Text(stringResource(R.string.error_confirm_leave)) },
+                text = { Text(stringResource(R.string.error_msg_confirm_leave)) },
+                onDismissRequest = { showConfirmLeaveDialog = false },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            navController.navigate(Screen.Overview.route)
+                            onEvent(DetailsEvent.ResetState)
+                        }
+                    ) {
+                        Text(stringResource(R.string.yes_leave))
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showConfirmLeaveDialog = false }
+                    ) {
+                        Text(stringResource(R.string.no_stay))
+                    }
+                }
+            )
+        }
+
         Column(
             modifier = Modifier
                 .padding(12.dp, pad.calculateTopPadding(), 12.dp, 12.dp)
@@ -118,7 +156,10 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 onValueChange = {
                     onEvent(DetailsEvent.TitleChanged(it))
                 },
-                label = { Text(stringResource(R.string.title)) },
+                label = {
+                    Text(stringResource(R.string.title)
+                                + if(state.titleChanged) "*" else "")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = state.isEditing
@@ -129,7 +170,10 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 onValueChange = {
                     onEvent(DetailsEvent.AuthorChanged(it))
                 },
-                label = { Text(stringResource(R.string.author)) },
+                label = {
+                    Text(stringResource(R.string.author)
+                                + if(state.authorChanged) "*" else "")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = state.isEditing
@@ -140,7 +184,10 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 onValueChange = {
                     onEvent(DetailsEvent.IsbnChanged(it))
                 },
-                label = { Text(stringResource(R.string.isbn)) },
+                label = {
+                    Text(stringResource(R.string.isbn)
+                                + if(state.isbnChanged) "*" else "")
+                },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = state.isEditing
@@ -159,7 +206,8 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                         },
                         enabled = state.isEditing
                     )
-                    Text(stringResource(id = R.string.owned))
+                    Text(stringResource(id = R.string.owned)
+                            + if (state.possessionStatusChanged) "*" else "")
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column(
@@ -172,7 +220,8 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                         },
                         enabled = state.isEditing
                     )
-                    Text(stringResource(id = R.string.read))
+                    Text(stringResource(id = R.string.read)
+                            + if (state.readStatusChanged) "*" else "")
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Column{
@@ -182,7 +231,8 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                         onRatingChanged = { newRating ->
                             onEvent(DetailsEvent.RatingChanged(newRating))
                         },
-                        enabled = state.isEditing
+                        enabled = state.isEditing,
+                        changed = state.ratingChanged
                     )
                 }
             }

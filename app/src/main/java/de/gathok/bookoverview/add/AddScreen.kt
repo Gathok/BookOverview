@@ -289,7 +289,8 @@ fun RatingBar(
     max: Int = 5,
     current: Int,
     onRatingChanged: (Int) -> Unit,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    changed: Boolean = false
 ) {
     Column(
         verticalArrangement = Arrangement.Center,
@@ -329,7 +330,7 @@ fun RatingBar(
                 text = when(current) {
                     0 -> stringResource(R.string.no_rating)
                     else -> "${stringResource(R.string.rating)}: $current★"
-                },
+                } + if (changed) "*" else "",
                 modifier = Modifier.padding(top = 8.dp)
             )
         }

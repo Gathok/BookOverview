@@ -39,4 +39,8 @@
     <string name="data_incomplete">Data incomplete</string>
     <string name="yes">Yes</string>
     <string name="is_double_isbn">This ISBN is already in the database.</string>
+    <string name="error_confirm_leave">Leave without saving?</string>
+    <string name="error_msg_confirm_leave">You are about to leave without saving the changes you made.\nDo you really want to leave?</string>
+    <string name="yes_leave">Yes, leave</string>
+    <string name="no_stay">No, stay</string>
 </resources>

@@ -38,4 +38,8 @@
     <string name="data_incomplete">Daten unvollständig</string>
     <string name="yes">Ja</string>
     <string name="is_double_isbn">Die ISBN ist bereits in der Datenbank vorhanden.</string>
+    <string name="error_confirm_leave">Verlassen ohne zu speichern?</string>
+    <string name="error_msg_confirm_leave">Ungespeicherte Änderungen werden verfallen.\\nMöchten Sie dennoch die Bearbeitung verlassen?</string>
+    <string name="yes_leave">Ja, verlassen</string>
+    <string name="no_stay">Nein, bleiben</string>
 </resources>

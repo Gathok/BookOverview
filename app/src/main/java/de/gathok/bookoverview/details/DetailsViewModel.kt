@@ -19,27 +19,79 @@ class DetailsViewModel (
 
     fun onEvent(event: DetailsEvent) {
         when (event) {
+            is DetailsEvent.FetchBook -> {
+                viewModelScope.launch {
+                    dao.getBookById(event.bookId).collect { book ->
+                        if (book != null) {
+                            _state.value = _state.value.copy(
+                                bookId = book.id,
+                                book = book,
+                                title = book.title,
+                                author = book.author,
+                                isbn = book.isbn,
+                                possessionStatus = book.possessionStatus,
+                                readStatus = book.readStatus,
+                                rating = book.rating ?: 0
+                            )
+                        }
+                    }
+                }
+            }
+
+            is DetailsEvent.TitleChanged -> {
+                _state.value = _state.value.copy(title = event.title)
+                if (event.title != _state.value.book?.title) {
+                    _state.value = _state.value.copy(titleChanged = true)
+                } else {
+                    _state.value = _state.value.copy(titleChanged = false)
+                }
+            }
             is DetailsEvent.AuthorChanged -> {
                 _state.value = _state.value.copy(author = event.author)
-            }
-            DetailsEvent.ResetState -> {
-                _state.value = DetailsState()
+                if (event.author != _state.value.book?.author) {
+                    _state.value = _state.value.copy(authorChanged = true)
+                } else {
+                    _state.value = _state.value.copy(authorChanged = false)
+                }
             }
             is DetailsEvent.IsbnChanged -> {
                 _state.value = _state.value.copy(isbn = event.isbn)
+                if (event.isbn != _state.value.book?.isbn) {
+                    _state.value = _state.value.copy(isbnChanged = true)
+                } else {
+                    _state.value = _state.value.copy(isbnChanged = false)
+                }
             }
             is DetailsEvent.PossessionStatusChanged -> {
                 _state.value = _state.value.copy(possessionStatus = event.possessionStatus)
-            }
-            is DetailsEvent.RatingChanged -> {
-                _state.value = _state.value.copy(rating = event.rating)
+                if (event.possessionStatus != _state.value.book?.possessionStatus) {
+                    _state.value = _state.value.copy(possessionStatusChanged = true)
+                } else {
+                    _state.value = _state.value.copy(possessionStatusChanged = false)
+                }
             }
             is DetailsEvent.ReadStatusChanged -> {
                 _state.value = _state.value.copy(readStatus = event.readStatus)
+                if (event.readStatus != _state.value.book?.readStatus) {
+                    _state.value = _state.value.copy(readStatusChanged = true)
+                } else {
+                    _state.value = _state.value.copy(readStatusChanged = false)
+                }
             }
-            is DetailsEvent.TitleChanged -> {
-                _state.value = _state.value.copy(title = event.title)
+            is DetailsEvent.RatingChanged -> {
+                _state.value = _state.value.copy(rating = event.rating)
+                if (event.rating == _state.value.book?.rating ||
+                    (event.rating == 0 && _state.value.book?.rating == null)) {
+                    _state.value = _state.value.copy(ratingChanged = false)
+                } else {
+                    _state.value = _state.value.copy(ratingChanged = true)
+                }
             }
+
+            DetailsEvent.SwitchEditing -> {
+                _state.value = _state.value.copy(isEditing = !_state.value.isEditing)
+            }
+
             DetailsEvent.UpdateBook -> {
                 val id = _state.value.bookId
                 val title = _state.value.title
@@ -70,25 +122,8 @@ class DetailsViewModel (
                     dao.upsertBook(book)
                 }
             }
-            DetailsEvent.SwitchEditing -> {
-                _state.value = _state.value.copy(isEditing = !_state.value.isEditing)
-            }
-            is DetailsEvent.FetchBook -> {
-                viewModelScope.launch {
-                    dao.getBookById(event.bookId).collect { book ->
-                        if (book != null) {
-                            _state.value = _state.value.copy(
-                                bookId = book.id,
-                                title = book.title,
-                                author = book.author,
-                                isbn = book.isbn,
-                                possessionStatus = book.possessionStatus,
-                                readStatus = book.readStatus,
-                                rating = book.rating ?: 0
-                            )
-                        }
-                    }
-                }
+            DetailsEvent.ResetState -> {
+                _state.value = DetailsState()
             }
         }
     }
