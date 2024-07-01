@@ -38,4 +38,5 @@
     <string name="error_msg_add_incomplete">Data is not complete. Do you want to add the book anyways?</string>
     <string name="data_incomplete">Data incomplete</string>
     <string name="yes">Yes</string>
+    <string name="is_double_isbn">This ISBN is already in the database.</string>
 </resources>

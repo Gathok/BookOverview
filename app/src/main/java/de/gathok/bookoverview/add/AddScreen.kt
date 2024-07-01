@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -30,6 +31,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -62,11 +64,38 @@ import de.gathok.bookoverview.util.customIconBarcodeScanner
 @Composable
 fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit, isbnFromNav: String? = null) {
 
+    // General error
     var showError by remember { mutableStateOf(false) }
     var errorTitleResource by remember { mutableIntStateOf(R.string.error) }
     var errorMessageResource by remember { mutableIntStateOf(R.string.error_message) }
-
+    // Incomplete data error
     var showIncompleteError by remember { mutableStateOf(false) }
+
+    // Others
+    val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
+
+    // LaunchedEffects
+    // If an ISBN is passed from the scanner, fetch the book data
+    LaunchedEffect (key1 = isbnFromNav) {
+        if (isbnFromNav != null) {
+            onEvent(AddEvent.IsbnChanged(isbnFromNav))
+            val bookResponse = BookModel.bookService.getBook(
+                isbn = "isbn:$isbnFromNav"
+            )
+            try {
+                onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
+                onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
+            } catch (e: Exception) {
+                errorTitleResource = R.string.error_scan
+                if (bookResponse.totalItems == 0 || state.title.isBlank()) {
+                    errorMessageResource = R.string.error_msg_scan
+                } else {
+                    errorMessageResource = R.string.error_msg_scan_author
+                }
+                showError = true
+            }
+        }
+    }
 
     Scaffold (
         modifier = Modifier.fillMaxSize(),
@@ -106,28 +135,6 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         }
     ) { pad ->
         val scrollState = rememberScrollState()
-        val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
-
-        LaunchedEffect (key1 = isbnFromNav) {
-            if (isbnFromNav != null) {
-                onEvent(AddEvent.IsbnChanged(isbnFromNav))
-                val bookResponse = BookModel.bookService.getBook(
-                    isbn = "isbn:$isbnFromNav"
-                )
-                try {
-                    onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
-                    onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
-                } catch (e: Exception) {
-                    errorTitleResource = R.string.error_scan
-                    if (bookResponse.totalItems == 0 || state.title.isBlank()) {
-                        errorMessageResource = R.string.error_msg_scan
-                    } else {
-                        errorMessageResource = R.string.error_msg_scan_author
-                    }
-                    showError = true
-                }
-            }
-        }
 
         if (showError) {
             AlertDialog(
@@ -194,6 +201,22 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 singleLine = true
             )
             Spacer(modifier = Modifier.height(16.dp))
+            if (state.isDoubleIsbn) {
+                Row (
+                    Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = stringResource(R.string.is_double_isbn),
+                        modifier = Modifier.padding(end = 8.dp),
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Text(
+                        text = stringResource(R.string.is_double_isbn),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
             OutlinedTextField(
                 value = state.isbn,
                 onValueChange = {

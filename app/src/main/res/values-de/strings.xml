@@ -37,4 +37,5 @@
     <string name="error_msg_add_incomplete">Daten sind unvollständig.\\nSoll das Buch dennoch hinzugefügt werden?</string>
     <string name="data_incomplete">Daten unvollständig</string>
     <string name="yes">Ja</string>
+    <string name="is_double_isbn">Die ISBN ist bereits in der Datenbank vorhanden.</string>
 </resources>

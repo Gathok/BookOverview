@@ -21,7 +21,10 @@ interface BookDao{
     suspend fun deleteBookById(id: Int)
 
     @Query("SELECT * FROM book WHERE id = :id")
-    fun getBookById(id: Int): Flow<Book>
+    fun getBookById(id: Int): Flow<Book?>
+
+    @Query("SELECT * FROM book WHERE isbn = :isbn")
+    fun getBookByIsbn(isbn: String): Flow<Book?>
 
     @RawQuery(observedEntities = [Book::class])
     fun rawQuery(query: SupportSQLiteQuery): Flow<List<Book>>

@@ -76,7 +76,7 @@ class DetailsViewModel (
             is DetailsEvent.FetchBook -> {
                 viewModelScope.launch {
                     dao.getBookById(event.bookId).collect { book ->
-                        if (book != null) { // TODO("ig this is not the nicest way to handle this")
+                        if (book != null) {
                             _state.value = _state.value.copy(
                                 bookId = book.id,
                                 title = book.title,

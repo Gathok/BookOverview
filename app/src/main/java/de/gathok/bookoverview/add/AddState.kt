@@ -8,5 +8,6 @@ data class AddState(
     val readStatus: Boolean = false,
     val rating: Int = 0,
     val cameraPermissionGranted: Boolean = false,
-    val isScanning: Boolean = false
+    val isScanning: Boolean = false,
+    val isDoubleIsbn: Boolean = false,
 )

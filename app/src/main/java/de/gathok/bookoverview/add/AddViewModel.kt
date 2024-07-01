@@ -25,7 +25,14 @@ class AddViewModel (
                 _state.value = _state.value.copy(author = event.author)
             }
             is AddEvent.IsbnChanged -> {
-                _state.value = _state.value.copy(isbn = event.isbn)
+                val newIsbn = event.isbn
+                _state.value = _state.value.copy(isbn = newIsbn)
+                //check if isbn is already in the database
+                viewModelScope.launch {
+                    dao.getBookByIsbn(newIsbn).collect { book ->
+                        _state.value = _state.value.copy(isDoubleIsbn = book != null)
+                    }
+                }
             }
             is AddEvent.PossessionStatusChanged -> {
                 _state.value = _state.value.copy(possessionStatus = event.possessionStatus)
@@ -65,9 +72,6 @@ class AddViewModel (
             }
             AddEvent.ClearFields -> {
                 _state.value = AddState()
-            }
-            AddEvent.ScanIsbn -> {
-                _state.value = _state.value.copy(isScanning = true)
             }
         }
     }

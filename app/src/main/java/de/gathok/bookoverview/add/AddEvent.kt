@@ -10,6 +10,4 @@ sealed class AddEvent {
 
     object AddBook: AddEvent()
     object ClearFields: AddEvent()
-
-    object ScanIsbn: AddEvent()
 }
