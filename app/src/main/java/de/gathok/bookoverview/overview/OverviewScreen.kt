@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,10 +32,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -75,6 +74,8 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.util.customIconBook
+import de.gathok.bookoverview.util.customIconFilterList
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -214,18 +215,22 @@ fun OverviewScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 SearchBar(
                     value = state.searchQuery,
                     onValueChange = { onEvent(OverviewEvent.ChangeSearchQuery(it)) },
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp)
                 )
                 IconButton(onClick = {
                     showFilterDialog = true
                 }) {
-                    Icon(Icons.Filled.MoreVert, contentDescription = stringResource(id = R.string.filter))
+                    Icon(
+                        imageVector = customIconFilterList(),
+                        contentDescription = stringResource(id = R.string.filter)
+                    )
                 }
             }
 
@@ -308,9 +313,9 @@ fun BookItem(book: Book) {
         ) {
             if (book.possessionStatus) {
                 Icon(
-                    Icons.Filled.ShoppingCart,
+                    imageVector = customIconBook(),
                     contentDescription = stringResource(id = R.string.owned),
-                    tint = Color.Gray,
+                    modifier = Modifier.size(24.dp)
                 )
             } else {
                 Text(
@@ -319,7 +324,7 @@ fun BookItem(book: Book) {
             }
             if (book.readStatus) {
                 Icon(
-                    Icons.Filled.CheckCircle,
+                    imageVector = Icons.Filled.CheckCircle,
                     contentDescription = stringResource(id = R.string.read),
                     tint = Color.Green,
                 )
@@ -622,26 +627,3 @@ fun SearchBar(
         ),
     )
 }
-
-//@Preview(showBackground = true, name = "BookOverviewScreen", group = "MainActivity")
-//@Composable
-//fun BookOverviewScreenPreview() {
-//    FloatingActionButton(
-//        onClick = {  }
-//    ) {
-//        Icon(
-//            imageVector = Icons.Filled.Add,
-//            contentDescription = stringResource(id = R.string.add_book),
-//            modifier = Modifier
-//                .padding(16.dp)
-//                .combinedClickable (
-//                    onClick = {
-////                        navController.navigate(Screen.Add.route + "/null")
-//                    },
-//                    onLongClick = {
-////                        navController.navigate(Screen.Scanner.route)
-//                    }
-//                )
-//        )
-//    }
-//}

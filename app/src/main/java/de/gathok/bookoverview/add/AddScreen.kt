@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
@@ -38,6 +37,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,12 +55,19 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.add.api.BookModel
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.util.customIconBarcodeScanner
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit,
-              isbnFromNav: String? = null) {
+fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit, isbnFromNav: String? = null) {
+
+    var showError by remember { mutableStateOf(false) }
+    var errorTitleResource by remember { mutableIntStateOf(R.string.error) }
+    var errorMessageResource by remember { mutableIntStateOf(R.string.error_message) }
+
+    var showIncompleteError by remember { mutableStateOf(false) }
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -79,8 +86,18 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 },
                 actions = {
                     IconButton(onClick = {
-                        onEvent(AddEvent.AddBook)
-                        navController.navigate(Screen.Overview.route)
+                        if (state.title.trim().isBlank() || state.author.trim().isBlank() || state.isbn.trim().isBlank()) {
+                            if (state.title.trim().isBlank()) {
+                                errorTitleResource = R.string.error_add
+                                errorMessageResource = R.string.error_msg_add
+                                showError = true
+                            } else {
+                                showIncompleteError = true
+                            }
+                        } else {
+                            onEvent(AddEvent.AddBook)
+                            navController.navigate(Screen.Overview.route)
+                        }
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.submit))
                     }
@@ -91,8 +108,6 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         val scrollState = rememberScrollState()
         val cameraPermission = rememberPermissionState(android.Manifest.permission.CAMERA)
 
-        var showScanError by remember { mutableStateOf(false) }
-
         LaunchedEffect (key1 = isbnFromNav) {
             if (isbnFromNav != null) {
                 onEvent(AddEvent.IsbnChanged(isbnFromNav))
@@ -101,25 +116,55 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 )
                 try {
                     onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
-                    onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors[0]))
+                    onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
                 } catch (e: Exception) {
-                    showScanError = true
+                    errorTitleResource = R.string.error_scan
+                    if (bookResponse.totalItems == 0 || state.title.isBlank()) {
+                        errorMessageResource = R.string.error_msg_scan
+                    } else {
+                        errorMessageResource = R.string.error_msg_scan_author
+                    }
+                    showError = true
                 }
             }
         }
 
-        if (showScanError) {
+        if (showError) {
             AlertDialog(
                 onDismissRequest = {
-                    showScanError = false
+                    showError = false
                 },
                 confirmButton = {
-                    TextButton(onClick = { showScanError = false }) {
+                    TextButton(onClick = { showError = false }) {
                         Text(stringResource(R.string.ok))
                     }
                 },
-                title = { Text(stringResource(R.string.error)) },
-                text = { Text(stringResource(R.string.error_msg_scan)) }
+                title = { Text(stringResource(id = errorTitleResource)) },
+                text = { Text(stringResource(id = errorMessageResource)) }
+            )
+        }
+
+        if (showIncompleteError) {
+            AlertDialog(
+                onDismissRequest = {
+                    showIncompleteError = false
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        showIncompleteError = false
+                        onEvent(AddEvent.AddBook)
+                        navController.navigate(Screen.Overview.route)
+                    }) {
+                        Text(stringResource(R.string.yes))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showIncompleteError = false }) {
+                        Text(stringResource(R.string.no))
+                    }
+                },
+                title = { Text(stringResource(id = R.string.data_incomplete)) },
+                text = { Text(stringResource(id = R.string.error_msg_add_incomplete)) }
             )
         }
 
@@ -158,15 +203,19 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 trailingIcon = {
-                    IconButton(onClick = {
-                        if (cameraPermission.status.isGranted) {
-                            navController.navigate(Screen.Scanner.route)
-                        } else {
-                            cameraPermission.launchPermissionRequest()
-                        }
-                    }) {
-                        Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.scan))
-                    }
+                    Icon(
+                        imageVector = customIconBarcodeScanner(),
+                        contentDescription = stringResource(R.string.scan),
+                        modifier = Modifier
+                            .clickable {
+                                if (cameraPermission.status.isGranted) {
+                                    navController.navigate(Screen.Scanner.route)
+                                } else {
+                                    cameraPermission.launchPermissionRequest()
+                                }
+                            }
+                            .padding(end = 8.dp)
+                    )
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))

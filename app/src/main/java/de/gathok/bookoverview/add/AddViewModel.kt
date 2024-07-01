@@ -37,14 +37,14 @@ class AddViewModel (
                 _state.value = _state.value.copy(rating = event.rating)
             }
             is AddEvent.AddBook -> {
-                val title = _state.value.title
-                val author = _state.value.author
-                val isbn = _state.value.isbn
+                val title = _state.value.title.trim()
+                val author = _state.value.author.trim()
+                val isbn = _state.value.isbn.trim()
                 val possessionStatus = _state.value.possessionStatus
                 val readStatus = _state.value.readStatus
                 val rating = _state.value.rating
 
-                if (title.isBlank() || author.isBlank() || isbn.isBlank()) {
+                if (title.isBlank()) {
                     return
                 }
 

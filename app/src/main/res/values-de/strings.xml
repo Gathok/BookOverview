@@ -29,4 +29,12 @@
     <string name="book_deleted_msg">Das Buch \"%1$s\" wurde gelöscht.\\nSoll es wiederhergestellt werden?</string>
     <string name="yes_restore">Ja, wiederherstellen</string>
     <string name="no">Nein</string>
+    <string name="book_count">Gezeigte Bücher: %1$s</string>
+    <string name="error_msg_add">Buch Titel muss gesetzt sein.</string>
+    <string name="error_scan">Fehler beim Scannen</string>
+    <string name="error_msg_scan_author">Kein Author gefunden. Bitte manuell eintragen.</string>
+    <string name="error_add">Fehler beim hinzufügen</string>
+    <string name="error_msg_add_incomplete">Daten sind unvollständig.\\nSoll das Buch dennoch hinzugefügt werden?</string>
+    <string name="data_incomplete">Daten unvollständig</string>
+    <string name="yes">Ja</string>
 </resources>

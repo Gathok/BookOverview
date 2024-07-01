@@ -8,6 +8,8 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,10 +34,12 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.util.customIconFlashlightOff
+import de.gathok.bookoverview.util.customIconFlashlightOn
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScannerScreen(navController: NavController) {
+fun ScannerScreen(navController: NavController? = null) {
     val cameraPermission = rememberPermissionState(
         android.Manifest.permission.CAMERA
     )
@@ -53,6 +57,10 @@ fun ScannerScreen(navController: NavController) {
         mutableStateOf<String?>(null)
     }
 
+    var flashOn by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { paddingValues ->
@@ -63,6 +71,21 @@ fun ScannerScreen(navController: NavController) {
                     .zIndex(2f),
                 contentAlignment = Alignment.BottomCenter
             ) {
+                Box (
+                    modifier = Modifier.padding(bottom = 128.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            flashOn = !flashOn
+                            camera.toggleFlash(flashOn)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (flashOn) customIconFlashlightOn() else customIconFlashlightOff(),
+                            contentDescription = "Flashlight"
+                        )
+                    }
+                }
                 AnimatedVisibility(
                     visible = lastScannedBarcode != null,
                     enter = fadeIn() + slideInVertically(),
@@ -127,7 +150,7 @@ fun ScannerScreen(navController: NavController) {
                             // check if lastScannedBarcode is a valid ISBN
                             // if so, navigate to Add screen with the ISBN
                             if (lastScannedBarcode?.length == 13 && lastScannedBarcode?.startsWith("978") == true) {
-                                navController.navigate(Screen.Add.route + "/${lastScannedBarcode}")
+                                navController?.navigate(Screen.Add.route + "/${lastScannedBarcode}")
                             }
                         }
                     )

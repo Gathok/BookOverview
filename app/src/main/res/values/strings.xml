@@ -30,5 +30,12 @@
     <string name="book_deleted_msg">The Book \"%1$s\" was deleted.\nDo you want to restore it?</string>
     <string name="yes_restore">Yes, restore</string>
     <string name="no">No</string>
-    <string name="book_count">Show books amount: %1$s</string>
+    <string name="book_count">Shown books: %1$s</string>
+    <string name="error_msg_add">Book title has to be set.</string>
+    <string name="error_scan">Error while scanning</string>
+    <string name="error_msg_scan_author">No author found. Please add manually.</string>
+    <string name="error_add">Error while adding</string>
+    <string name="error_msg_add_incomplete">Data is not complete. Do you want to add the book anyways?</string>
+    <string name="data_incomplete">Data incomplete</string>
+    <string name="yes">Yes</string>
 </resources>
