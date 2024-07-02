@@ -29,7 +29,7 @@
     <string name="book_deleted_msg">Das Buch \"%1$s\" wurde gelöscht.\\nSoll es wiederhergestellt werden?</string>
     <string name="yes_restore">Ja, wiederherstellen</string>
     <string name="no">Nein</string>
-    <string name="book_count">Gezeigte Bücher: %1$s</string>
+    <string name="shown_books">Gezeigte Bücher: %1$s</string>
     <string name="error_msg_no_title">Buch Titel muss gesetzt sein.</string>
     <string name="error_scan">Fehler beim Scannen</string>
     <string name="error_msg_scan_author">Kein Author gefunden. Bitte manuell eintragen.</string>
@@ -48,4 +48,5 @@
     <string name="deleted">Gelöscht</string>
     <string name="restore_or_delete">Wiederherstellen oder löschen?</string>
     <string name="restore_or_delete_desc">Das Buch \"%1$s\" wiederherstellen oder löschen?</string>
+    <string name="empty">leer</string>
 </resources>

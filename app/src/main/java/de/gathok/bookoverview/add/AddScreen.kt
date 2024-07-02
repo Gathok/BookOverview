@@ -57,7 +57,7 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.add.api.BookModel
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
-import de.gathok.bookoverview.util.customIconBarcodeScanner
+import de.gathok.bookoverview.ui.customIconBarcodeScanner
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)

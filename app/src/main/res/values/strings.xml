@@ -30,7 +30,7 @@
     <string name="book_deleted_msg">The Book \"%1$s\" was deleted.\nDo you want to restore it?</string>
     <string name="yes_restore">Yes, restore</string>
     <string name="no">No</string>
-    <string name="book_count">Shown books: %1$s</string>
+    <string name="shown_books">Shown books: %1$s</string>
     <string name="error_msg_no_title">Book title has to be set.</string>
     <string name="error_scan">Error while scanning</string>
     <string name="error_msg_scan_author">No author found. Please add manually.</string>
@@ -49,4 +49,5 @@
     <string name="settings_trash_desc">Deleted books can be restored or permanently deleted right here.</string>
     <string name="restore_or_delete">Restore or delete?</string>
     <string name="restore_or_delete_desc">Restore or delete the book \"%1$s\"?</string>
+    <string name="empty">empty</string>
 </resources>

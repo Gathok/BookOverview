@@ -34,8 +34,8 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.util.Screen
-import de.gathok.bookoverview.util.customIconFlashlightOff
-import de.gathok.bookoverview.util.customIconFlashlightOn
+import de.gathok.bookoverview.ui.customIconFlashlightOff
+import de.gathok.bookoverview.ui.customIconFlashlightOn
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable

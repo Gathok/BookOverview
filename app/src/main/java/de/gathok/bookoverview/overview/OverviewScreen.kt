@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -74,15 +73,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.ui.customIconBook
+import de.gathok.bookoverview.ui.customIconDelete
+import de.gathok.bookoverview.ui.customIconFilterList
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
-import de.gathok.bookoverview.util.customIconBook
-import de.gathok.bookoverview.util.customIconFilterList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -211,14 +212,15 @@ fun OverviewScreen(
                         modifier = Modifier
                             .weight(1f)
                     )
-                    IconButton(onClick = {
-                        showFilterDialog = true
-                    }) {
-                        Icon(
-                            imageVector = customIconFilterList(),
-                            contentDescription = stringResource(id = R.string.filter)
-                        )
-                    }
+                    Icon(
+                        imageVector = customIconFilterList(),
+                        contentDescription = stringResource(id = R.string.filter),
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clickable {
+                                showFilterDialog = true
+                            }
+                    )
                 }
 
                 LazyColumn(
@@ -252,7 +254,29 @@ fun OverviewScreen(
                                 }
                             },
                         ) {
-                            BookItem(book)
+                            Column (
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.background)
+                            ) {
+                                Row (
+                                    modifier = Modifier
+                                        .padding(12.dp, 0.dp)
+                                        .background(MaterialTheme.colorScheme.background)
+                                ) {
+                                    BookItem(book)
+                                }
+                                Row (
+                                    modifier = Modifier
+                                        .background(MaterialTheme.colorScheme.background)
+                                ) {
+                                    Spacer(modifier = Modifier
+                                        .height(2.dp)
+                                        .fillMaxWidth()
+                                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
+                                    )
+                                }
+                            }
                         }
                     }
                     item {
@@ -263,8 +287,9 @@ fun OverviewScreen(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Text(
-                                text = stringResource(id = R.string.book_count, state.books.size),
-                                fontSize = 10.sp,
+                                text = stringResource(id = R.string.shown_books, state.books.size),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                             )
                         }
                     }
@@ -295,7 +320,6 @@ fun OverviewScreen(
 fun BookItem(book: Book) {
     Row (
         modifier = Modifier
-            .padding(12.dp, 0.dp)
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.background)
     ) {
@@ -305,21 +329,27 @@ fun BookItem(book: Book) {
                 .fillMaxWidth(1f)
         ) {
             Text(
-                text = book.getRatingString() ?: stringResource(id = R.string.no_rating),
+                text = book.getRatingString(),
                 modifier = Modifier.padding(end = 8.dp),
                 color = when (book.rating) {
                     in 1..5 -> ratingStars
-                    else -> Color.Gray
+                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 }
             )
             Text(
                 text = book.title,
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 8.dp),
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             Text(
                 text = book.author,
                 modifier = Modifier.padding(end = 8.dp),
-                fontSize = 12.sp
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         Column (
@@ -609,7 +639,7 @@ fun SwipeBackground(
             Icon(
                 imageVector = when (swipeToDismissBoxState.dismissDirection) {
                     SwipeToDismissBoxValue.StartToEnd -> Icons.Default.Info
-                    SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
+                    SwipeToDismissBoxValue.EndToStart -> customIconDelete()
                     SwipeToDismissBoxValue.Settled -> Icons.Default.Info
                 },
                 contentDescription = null,

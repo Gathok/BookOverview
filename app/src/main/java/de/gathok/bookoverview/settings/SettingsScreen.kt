@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
+import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.util.Screen
 
 @Composable
@@ -72,9 +73,10 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
                 .padding(pad)
         ) {
             SettingsItem(
-                title = stringResource(R.string.trash),
+                title = stringResource(R.string.trash)
+                        + if (state.trashIsEmpty) " (${stringResource(id = R.string.empty)})" else "",
                 description = stringResource(R.string.settings_trash_desc),
-                icon = Icons.Filled.Delete,
+                icon = customIconDelete(),
                 onClick = { onEvent(SettingsEvent.OnTrashClicked) },
                 onLongClick = {  }
             )

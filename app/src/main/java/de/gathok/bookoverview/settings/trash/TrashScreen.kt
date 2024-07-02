@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +41,8 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.settings.SettingsEvent
 import de.gathok.bookoverview.settings.SettingsState
-import de.gathok.bookoverview.util.customIconRestoreFromTrash
+import de.gathok.bookoverview.ui.customIconDeleteForever
+import de.gathok.bookoverview.ui.customIconRestoreFromTrash
 
 @Composable
 fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (SettingsEvent) -> Unit) {
@@ -79,7 +79,10 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                             showDialog = false
                         }
                     ) {
-                        Text(stringResource(id = R.string.restore))
+                        Text(
+                            text = stringResource(id = R.string.restore),
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 },
                 dismissButton = {
@@ -89,7 +92,10 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                             showDialog = false
                         }
                     ) {
-                        Text(stringResource(id = R.string.delete))
+                        Text(
+                            text = stringResource(id = R.string.delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 },
                 title = {
@@ -108,22 +114,26 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
         ) {
             LazyColumn {
                 items(state.trashedBooks) { book ->
-                    TrashedBookItem(
-                        book = book,
-                        onClick = {
-                            currentBook = book
-                            showDialog = true
-                        },
-                        onRestore = { onEvent(SettingsEvent.OnTrashRestoreClicked(book)) },
-                        onDelete = { onEvent(SettingsEvent.OnTrashDeleteClicked(book)) },
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Spacer(modifier = Modifier
-                        .height(2.dp)
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Column {
+                        Row {
+                            TrashedBookItem(
+                                book = book,
+                                onClick = {
+                                    currentBook = book
+                                    showDialog = true
+                                },
+                                onRestore = { onEvent(SettingsEvent.OnTrashRestoreClicked(book)) },
+                                onDelete = { onEvent(SettingsEvent.OnTrashDeleteClicked(book)) },
+                            )
+                        }
+                        Row {
+                            Spacer(modifier = Modifier
+                                .height(2.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -177,7 +187,7 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
                 tint = Color.Green
             )
             Icon(
-                imageVector = Icons.Filled.Delete,
+                imageVector = customIconDeleteForever(),
                 contentDescription = stringResource(id = R.string.delete),
                 modifier = Modifier
                     .clickable { onDelete() }
@@ -187,48 +197,3 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
         }
     }
 }
-
-//@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
-//@Composable
-//fun PreviewTrashScreen() {
-//    BookOverviewTheme {
-//        Scaffold (
-//            modifier = Modifier.fillMaxSize(),
-//            topBar = {
-//                CenterAlignedTopAppBar(
-//                    title = {
-//                        Text(text = stringResource(id = R.string.trash))
-//                    },
-//                    navigationIcon = {
-//                        IconButton(onClick = {  }) {
-//                            Icon(
-//                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                                contentDescription = stringResource(id = R.string.back)
-//                            )
-//                        }
-//                    }
-//                )
-//            },
-//        ) { pad ->
-//
-//            Column (
-//                modifier = Modifier
-//                    .padding(pad)
-//                    .fillMaxSize()
-//            ) {
-//                TrashedBookItem(
-//                    book = Book("Meine Mutter ist geil", "Ich", "12345678", deletedSince = 1719922406304),
-//                    onClick = {  },
-//                    onDelete = {  },
-//                    onRestore = {  }
-//                )
-//                TrashedBookItem(
-//                    book = Book("Meine Mutter ist geil", "Ich", "12345678", deletedSince = 971992250000),
-//                    onClick = { },
-//                    onDelete = { },
-//                    onRestore = {  }
-//                )
-//            }
-//        }
-//    }
-//}

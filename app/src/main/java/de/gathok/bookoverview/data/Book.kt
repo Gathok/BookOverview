@@ -18,14 +18,14 @@ data class Book(
     var deletedSince: Long = 0
 ) {
 
-    fun getRatingString(): String? {
+    fun getRatingString(): String {
         return when (rating) {
             1 -> "★☆☆☆☆"
             2 -> "★★☆☆☆"
             3 -> "★★★☆☆"
             4 -> "★★★★☆"
             5 -> "★★★★★"
-            else -> null
+            else -> "☆☆☆☆☆"
         }
     }
 
