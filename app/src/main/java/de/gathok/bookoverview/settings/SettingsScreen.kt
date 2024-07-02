@@ -2,10 +2,13 @@
 
 package de.gathok.bookoverview.settings
 
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -26,7 +28,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -50,6 +54,17 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
         }
     }
 
+    var versionName: String?
+
+    val context = LocalContext.current
+    try {
+        val pInfo: PackageInfo =
+            context.packageManager.getPackageInfo(context.packageName, 0)
+        versionName = pInfo.versionName
+    } catch (e: PackageManager.NameNotFoundException) {
+        versionName = null
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -68,9 +83,10 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
             )
         },
     ) { pad ->
-        Column (
+        Column(
             modifier = Modifier
                 .padding(pad)
+                .fillMaxSize(),
         ) {
             SettingsItem(
                 title = stringResource(R.string.trash)
@@ -78,15 +94,20 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
                 description = stringResource(R.string.settings_trash_desc),
                 icon = customIconDelete(),
                 onClick = { onEvent(SettingsEvent.OnTrashClicked) },
-                onLongClick = {  }
+                onLongClick = { }
             )
-            SettingsItem(
-                title = "About",
-                description = "Information about the app and the developer.",
-                icon = Icons.Filled.Info,
-                onClick = {  },
-                onLongClick = {  }
-            )
+            Spacer(modifier = Modifier.weight(1f)) // This spacer pushes the version info to the bottom
+            if (versionName != null) {
+                Text(
+                    text = stringResource(R.string.settings_version, versionName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
