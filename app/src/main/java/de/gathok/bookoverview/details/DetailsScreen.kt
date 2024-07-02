@@ -3,6 +3,7 @@
 package de.gathok.bookoverview.details
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -79,20 +80,29 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
     var showConfirmLeaveDialog by remember { mutableStateOf(false) }
     var showNoTitleDialog by remember { mutableStateOf(false) }
 
+    fun onDismiss() {
+        if (state.isEditing &&
+            (state.titleChanged || state.authorChanged || state.isbnChanged ||
+                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged)) {
+            showConfirmLeaveDialog = true
+        } else {
+            navController.navigate(Screen.Overview.route)
+            onEvent(DetailsEvent.ResetState)
+        }
+    }
+
+    BackHandler(enabled = true) {
+        // This block will be called when the user tries to navigate back
+        onDismiss()
+    }
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
                     IconButton(onClick = {
-                        if (state.isEditing &&
-                            (state.titleChanged || state.authorChanged || state.isbnChanged ||
-                                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged)) {
-                            showConfirmLeaveDialog = true
-                        } else {
-                            navController.navigate(Screen.Overview.route)
-                            onEvent(DetailsEvent.ResetState)
-                        }
+                        onDismiss()
                     }) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
