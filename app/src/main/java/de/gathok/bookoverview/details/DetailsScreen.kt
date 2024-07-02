@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,8 +57,9 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             text = { Text(stringResource(R.string.error_message)) },
             onDismissRequest = { navController.navigate(Screen.Overview.route) },
             confirmButton = {
-                Button(
-                    onClick = { navController.navigate(Screen.Overview.route) }) {
+                TextButton(
+                    onClick = { navController.navigate(Screen.Overview.route) }
+                ) {
                     Text("OK")
                 }
             }
@@ -131,7 +132,7 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 text = { Text(stringResource(R.string.error_msg_save_changes)) },
                 onDismissRequest = { showConfirmLeaveDialog = false },
                 confirmButton = {
-                    Button(
+                    TextButton(
                         onClick = {
                             if (state.title.isBlank()) {
                                 showConfirmLeaveDialog = false
@@ -144,17 +145,20 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                             }
                         }
                     ) {
-                        Text(stringResource(R.string.yes_save))
+                        Text(text = stringResource(R.string.yes_save))
                     }
                 },
                 dismissButton = {
-                    Button(
+                    TextButton(
                         onClick = {
                             navController.navigate(Screen.Overview.route)
                             onEvent(DetailsEvent.ResetState)
                         }
                     ) {
-                        Text(stringResource(R.string.no))
+                        Text(
+                            text = stringResource(R.string.no),
+                            color = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             )
@@ -162,14 +166,14 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
 
         if (showNoTitleDialog) {
             AlertDialog(
-                title = { Text(stringResource(R.string.error)) },
-                text = { Text(stringResource(R.string.error_msg_no_title)) },
+                title = { Text(text = stringResource(R.string.error)) },
+                text = { Text(text = stringResource(R.string.error_msg_no_title)) },
                 onDismissRequest = { showNoTitleDialog = false },
                 confirmButton = {
-                    Button(
+                    TextButton(
                         onClick = { showNoTitleDialog = false }
                     ) {
-                        Text(stringResource(R.string.ok))
+                        Text(text = stringResource(R.string.ok))
                     }
                 }
             )

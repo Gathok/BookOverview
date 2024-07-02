@@ -142,7 +142,9 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                     showError = false
                 },
                 confirmButton = {
-                    TextButton(onClick = { showError = false }) {
+                    TextButton(
+                        onClick = { showError = false }
+                    ) {
                         Text(stringResource(R.string.ok))
                     }
                 },
