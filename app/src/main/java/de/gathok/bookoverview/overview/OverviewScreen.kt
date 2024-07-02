@@ -180,7 +180,7 @@ fun OverviewScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        // TODO("Show settings")
+                        navController.navigate(Screen.Settings.route)
                     }) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.settings))
                     }

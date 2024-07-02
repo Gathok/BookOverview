@@ -1,0 +1,12 @@
+package de.gathok.bookoverview.settings
+
+import de.gathok.bookoverview.data.Book
+
+sealed class SettingsEvent {
+
+    data object SettingsOpened: SettingsEvent()
+
+    data object OnTrashClicked : SettingsEvent()
+    data class OnTrashRestoreClicked(val book: Book) : SettingsEvent()
+    data class OnTrashDeleteClicked(val book: Book) : SettingsEvent()
+}

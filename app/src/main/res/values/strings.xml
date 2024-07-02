@@ -42,4 +42,11 @@
     <string name="error_save_changes">Save changes?</string>
     <string name="error_msg_save_changes">Save changes before leaving?</string>
     <string name="yes_save">Yes, save</string>
+    <string name="trash">Trash</string>
+    <string name="restore">Restore</string>
+    <string name="delete">Delete</string>
+    <string name="deleted">Deleted</string>
+    <string name="settings_trash_desc">Deleted books can be restored or permanently deleted right here.</string>
+    <string name="restore_or_delete">Restore or delete?</string>
+    <string name="restore_or_delete_desc">Restore or delete the book: \"%1$s\"</string>
 </resources>

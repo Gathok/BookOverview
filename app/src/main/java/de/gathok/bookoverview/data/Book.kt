@@ -2,6 +2,8 @@ package de.gathok.bookoverview.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import java.text.DateFormat.getDateInstance
+import java.util.Date
 
 @Entity
 data class Book(
@@ -12,7 +14,8 @@ data class Book(
     var readStatus: Boolean = false,
     var rating: Int? = null,
     @PrimaryKey(autoGenerate = true)
-    val id: Int = 0
+    val id: Int = 0,
+    var deletedSince: Long = 0
 ) {
 
     fun getRatingString(): String? {
@@ -23,6 +26,14 @@ data class Book(
             4 -> "★★★★☆"
             5 -> "★★★★★"
             else -> null
+        }
+    }
+
+    fun getDeletedSinceString(): String {
+        return if (deletedSince == 0L) {
+            ""
+        } else {
+            getDateInstance().format(Date(deletedSince))
         }
     }
 }

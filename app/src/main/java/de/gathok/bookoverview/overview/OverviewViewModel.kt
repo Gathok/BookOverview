@@ -37,25 +37,24 @@ class OverviewViewModel (
     }
 
     private val _books = _filterList
-    .flatMapLatest { filters ->
-        val possessionStatus = filters[0] as Boolean?
-        val readStatus = filters[1] as Boolean?
-        val sortType = (filters[2] as SortType).queryValue
-        val searchQuery = filters[3] as String
-        val searchType = (filters[4] as SearchType).queryValue
+        .flatMapLatest { filters ->
+            val possessionStatus = filters[0] as Boolean?
+            val readStatus = filters[1] as Boolean?
+            val sortType = (filters[2] as SortType).queryValue
+            val searchQuery = filters[3] as String
+            val searchType = (filters[4] as SearchType).queryValue
 
-        val query = SimpleSQLiteQuery(
-            "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
-                    " AND (:isRead IS NULL OR readStatus = :isRead)" +
-                    " AND $searchType LIKE '%' || :searchQuery || '%'" +
-                    " ORDER BY $sortType COLLATE NOCASE ASC",
-            arrayOf(possessionStatus, readStatus, searchQuery)
-        )
+            val query = SimpleSQLiteQuery(
+                "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+                        " AND (:isRead IS NULL OR readStatus = :isRead)" +
+                        " AND $searchType LIKE '%' || :searchQuery || '%'" +
+                        " AND deletedSince = 0" +
+                        " ORDER BY $sortType COLLATE NOCASE ASC",
+                arrayOf(possessionStatus, readStatus, searchQuery)
+            )
 
-        dao.rawQuery(query)
-    }
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+            dao.rawQuery(query)
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
     private val _state = MutableStateFlow(OverviewState())
     val state = combine(_state, _books) { state, books ->
             state.copy(
@@ -77,7 +76,7 @@ class OverviewViewModel (
             }
             is OverviewEvent.DeleteBook -> {
                 viewModelScope.launch {
-                    dao.deleteBook(event.book)
+                    dao.trashBookById(event.book.id)
                 }
             }
             is OverviewEvent.AddBook -> {

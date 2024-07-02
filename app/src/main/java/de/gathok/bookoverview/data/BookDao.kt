@@ -17,6 +17,15 @@ interface BookDao{
     @Delete
     suspend fun deleteBook(book: Book)
 
+    @Query("UPDATE book SET deletedSince = :currentTimestamp WHERE id = :id")
+    suspend fun trashBookById(id: Int, currentTimestamp: Long = System.currentTimeMillis())
+
+    @Query("UPDATE book SET deletedSince = 0 WHERE id = :id")
+    suspend fun restoreBookById(id: Int)
+
+    @Query("SELECT * FROM book WHERE deletedSince != 0")
+    fun getTrash(): Flow<List<Book>>
+
     @Query("DELETE FROM book WHERE id = :id")
     suspend fun deleteBookById(id: Int)
 

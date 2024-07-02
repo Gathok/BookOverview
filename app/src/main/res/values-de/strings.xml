@@ -41,4 +41,9 @@
     <string name="error_save_changes">Änderungen speichern?</string>
     <string name="error_msg_save_changes">Änderungen vorm Verlassen speichern?</string>
     <string name="yes_save">Ja, speichern</string>
+    <string name="trash">Mülleimer</string>
+    <string name="settings_trash_desc">Hier können gelöschte Bücher wiedergehergestellt oder endgültig gelöscht werden.</string>
+    <string name="restore">Wiederherstellen</string>
+    <string name="delete">Löschen</string>
+    <string name="deleted">Gelöscht</string>
 </resources>
