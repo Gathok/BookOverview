@@ -48,5 +48,5 @@
     <string name="deleted">Deleted</string>
     <string name="settings_trash_desc">Deleted books can be restored or permanently deleted right here.</string>
     <string name="restore_or_delete">Restore or delete?</string>
-    <string name="restore_or_delete_desc">Restore or delete the book: \"%1$s\"</string>
+    <string name="restore_or_delete_desc">Restore or delete the book \"%1$s\"?</string>
 </resources>

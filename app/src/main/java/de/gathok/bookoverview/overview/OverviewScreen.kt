@@ -48,6 +48,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
@@ -61,6 +67,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +83,9 @@ import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
 import de.gathok.bookoverview.util.customIconBook
 import de.gathok.bookoverview.util.customIconFilterList
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -86,9 +95,11 @@ fun OverviewScreen(
     state: OverviewState,
     onEvent: (OverviewEvent) -> Unit
 ) {
+    val coroutineScope: CoroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     var showFilterDialog by remember { mutableStateOf(false) }
     var deletedBook by remember { mutableStateOf<Book?>(null) }
-    var showDeleteRestoreDialog by remember { mutableStateOf(false) }
 
     if (showFilterDialog) {
         FilterDialog(
@@ -146,31 +157,6 @@ fun OverviewScreen(
         )
     }
 
-    if (showDeleteRestoreDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteRestoreDialog = false },
-            title = { Text(stringResource(id = R.string.book_deleted)) },
-            text = { Text(stringResource(id = R.string.book_deleted_msg, deletedBook?.title ?: "")) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDeleteRestoreDialog = false
-                        onEvent(OverviewEvent.AddBook(deletedBook!!))
-                    }
-                ) {
-                    Text(stringResource(id = R.string.yes_restore))
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { showDeleteRestoreDialog = false }
-                ) {
-                    Text(stringResource(id = R.string.no))
-                }
-            }
-        )
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -206,72 +192,100 @@ fun OverviewScreen(
                         )
                 )
             }
-        }
+        },
     ) { pad ->
-        Column (
-            modifier = Modifier
-                .padding(pad)
-        ) {
-            Row(
+        Box (modifier = Modifier.fillMaxSize()) {
+            Column (
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(pad)
             ) {
-                SearchBar(
-                    value = state.searchQuery,
-                    onValueChange = { onEvent(OverviewEvent.ChangeSearchQuery(it)) },
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                )
-                IconButton(onClick = {
-                    showFilterDialog = true
-                }) {
-                    Icon(
-                        imageVector = customIconFilterList(),
-                        contentDescription = stringResource(id = R.string.filter)
-                    )
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                items(
-                    items = state.books,
-                    key = { it.id }
-                ) { book ->
-                    SwipeContainer(
-                        item = book,
-                        onDetails = {
-                            navController.navigate("${Screen.Details.route}/${it.id}")
-                        },
-                        onDelete = {
-                            onEvent(OverviewEvent.DeleteBook(it))
-                            deletedBook = it
-                            showDeleteRestoreDialog = true
-                        },
-                    ) {
-                        BookItem(book)
-                    }
-                }
-                item {
-                    Row (
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SearchBar(
+                        value = state.searchQuery,
+                        onValueChange = { onEvent(OverviewEvent.ChangeSearchQuery(it)) },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.book_count, state.books.size),
-                            fontSize = 10.sp,
+                            .weight(1f)
+                    )
+                    IconButton(onClick = {
+                        showFilterDialog = true
+                    }) {
+                        Icon(
+                            imageVector = customIconFilterList(),
+                            contentDescription = stringResource(id = R.string.filter)
                         )
                     }
                 }
-                item {
-                    Spacer(modifier = Modifier.height(128.dp))
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    items(
+                        items = state.books,
+                        key = { it.id }
+                    ) { book ->
+                        val actionLabel = stringResource(id = R.string.restore)
+                        val message = "\"${book.title}\" ${stringResource(id = R.string.deleted)}"
+                        SwipeContainer(
+                            item = book,
+                            onDetails = {
+                                navController.navigate("${Screen.Details.route}/${it.id}")
+                            },
+                            onDelete = {
+                                onEvent(OverviewEvent.DeleteBook(it))
+                                deletedBook = it
+                                coroutineScope.launch {
+                                    val snackbarResult = snackbarHostState.showSnackbar(
+                                        message = message,
+                                        actionLabel = actionLabel,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (snackbarResult == SnackbarResult.ActionPerformed) {
+                                        onEvent(OverviewEvent.RestoreBook(deletedBook!!))
+                                        println("Action Performed")
+                                    }
+                                }
+                            },
+                        ) {
+                            BookItem(book)
+                        }
+                    }
+                    item {
+                        Row (
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.book_count, state.books.size),
+                                fontSize = 10.sp,
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.height(128.dp))
+                    }
                 }
+            }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 64.dp, start = 16.dp, end = 16.dp),
+            ) { snackbarData: SnackbarData ->
+                Snackbar(
+                    snackbarData = snackbarData,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionColor = MaterialTheme.colorScheme.onPrimary,
+                )
             }
         }
     }

@@ -88,6 +88,11 @@ class OverviewViewModel (
                 _searchQuery.value = event.searchQuery
                 _state.value = _state.value.copy(searchQuery = event.searchQuery)
             }
+            is OverviewEvent.RestoreBook -> {
+                viewModelScope.launch {
+                    dao.restoreBookById(event.book.id)
+                }
+            }
         }
     }
 }
