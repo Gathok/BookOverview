@@ -46,7 +46,7 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
     LaunchedEffect(key1 = state.curScreen) {
         when (state.curScreen) {
             Screen.Trash -> {
-                navController.navigate("settings/trash")
+                navController.navigate(Screen.Trash.route)
             }
             else -> {
                 // Do nothing
