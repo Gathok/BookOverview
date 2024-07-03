@@ -54,7 +54,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
-import de.gathok.bookoverview.add.api.BookModel
+import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
 import de.gathok.bookoverview.ui.customIconBarcodeScanner
@@ -292,12 +292,11 @@ fun RatingBar(
     current: Int,
     onRatingChanged: (Int) -> Unit,
     enabled: Boolean = true,
-    changed: Boolean = false
+    changed: Boolean = false,
+    showText: Boolean = true
 ) {
     Column(
-        verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxSize()
     ) {
         Row(
             horizontalArrangement = Arrangement.Center,
@@ -327,14 +326,16 @@ fun RatingBar(
                 )
             }
         }
-        Row {
-            Text(
-                text = when(current) {
-                    0 -> stringResource(R.string.no_rating)
-                    else -> "${stringResource(R.string.rating)}: $current★"
-                } + if (changed) "*" else "",
-                modifier = Modifier.padding(top = 8.dp)
-            )
+        if (showText) {
+            Row {
+                Text(
+                    text = when(current) {
+                        0 -> stringResource(R.string.no_rating)
+                        else -> "${stringResource(R.string.rating)}: $current★"
+                    } + if (changed) "*" else "",
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
     }
 }

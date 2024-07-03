@@ -13,6 +13,7 @@ data class Book(
     var possessionStatus: Boolean = false,
     var readStatus: Boolean = false,
     var rating: Int? = null,
+    var description: String = "",
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     var deletedSince: Long = 0

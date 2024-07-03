@@ -96,4 +96,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
+
+    // Image
+    implementation(libs.coil.compose.v260)
 }

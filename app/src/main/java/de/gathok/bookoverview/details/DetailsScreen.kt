@@ -2,8 +2,10 @@
 
 package de.gathok.bookoverview.details
 
-import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,18 +13,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,41 +38,79 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.add.RatingBar
-import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.api.BookModel
+import de.gathok.bookoverview.ui.customIconBook
+import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
+import de.gathok.bookoverview.ui.customIconSelectCheckBox
 
+
+//@Composable
+//fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
+//                  bookId: Int?) {
+//
+//    if (bookId == null || state.bookId == 0) {
+//        AlertDialog(
+//            title = { Text(stringResource(R.string.error)) },
+//            text = { Text(stringResource(R.string.error_message)) },
+//            onDismissRequest = { navController.popBackStack() },
+//            confirmButton = {
+//                TextButton(
+//                    onClick = { navController.popBackStack() }
+//                ) {
+//                    Text("OK")
+//                }
+//            }
+//        )
+//    } else {
+//        LaunchedEffect(key1 = bookId) {
+//            onEvent(DetailsEvent.FetchBook(bookId))
+//        }
+//        DetailsScreenContent(navController, state, onEvent)
+//    }
+//}
 
 @Composable
 fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
                   bookId: Int?) {
 
-    if (bookId == null || state.bookId == 0) {
-        AlertDialog(
-            title = { Text(stringResource(R.string.error)) },
-            text = { Text(stringResource(R.string.error_message)) },
-            onDismissRequest = { navController.navigate(Screen.Overview.route) },
-            confirmButton = {
-                TextButton(
-                    onClick = { navController.navigate(Screen.Overview.route) }
-                ) {
-                    Text("OK")
-                }
-            }
-        )
-    } else {
-        LaunchedEffect(key1 = bookId) {
-            onEvent(DetailsEvent.FetchBook(bookId))
+    LaunchedEffect (key1 = bookId) {
+        onEvent(DetailsEvent.ResetState)
+        if (bookId != null) {
+            onEvent(DetailsEvent.ChangeBookId(bookId))
+        } else {
+            navController.popBackStack()
         }
-        DetailsScreenContent(navController, state, onEvent)
     }
-}
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun DetailsScreenContent(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit) {
+    LaunchedEffect (key1 = state.book) {
+        if (state.book != null) {
+            onEvent(DetailsEvent.TitleChanged(state.book.title))
+            onEvent(DetailsEvent.AuthorChanged(state.book.author))
+            onEvent(DetailsEvent.IsbnChanged(state.book.isbn))
+            onEvent(DetailsEvent.PossessionStatusChanged(state.book.possessionStatus))
+            onEvent(DetailsEvent.ReadStatusChanged(state.book.readStatus))
+            onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
+            onEvent(DetailsEvent.DescriptionChanged(state.book.description))
+
+            val bookResponse = BookModel.bookService.getBook(
+                isbn = "isbn:${state.book.isbn}"
+            )
+            try {
+                val imageUrl = bookResponse.items[0].volumeInfo.imageLinks.thumbnail
+                onEvent(DetailsEvent.SetCoverImage(imageUrl))
+                onEvent(DetailsEvent.SetOnlineDescription(bookResponse.items[0].volumeInfo.description))
+            } catch (e: Exception) {
+                // No cover image found
+            }
+        }
+    }
 
     var showConfirmLeaveDialog by remember { mutableStateOf(false) }
     var showNoTitleDialog by remember { mutableStateOf(false) }
@@ -83,11 +118,13 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
     fun onDismiss() {
         if (state.isEditing &&
             (state.titleChanged || state.authorChanged || state.isbnChanged ||
-                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged)) {
+                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged
+                    || state.descriptionChanged)
+        ) {
             showConfirmLeaveDialog = true
         } else {
-            navController.navigate(Screen.Overview.route)
-            onEvent(DetailsEvent.ResetState)
+            navController.popBackStack()
+//            onEvent(DetailsEvent.ResetState)
         }
     }
 
@@ -96,7 +133,7 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
         onDismiss()
     }
 
-    Scaffold (
+    Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             CenterAlignedTopAppBar(
@@ -115,26 +152,45 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 },
                 actions = {
                     if (!state.isEditing) {
-                        IconButton(onClick = { onEvent(DetailsEvent.SwitchEditing) }) {
-                            Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.edit))
+                        IconButton(onClick = {
+                            onEvent(DetailsEvent.SwitchEditing)
+                        }) {
+                            Icon(
+                                Icons.Filled.Edit,
+                                contentDescription = stringResource(R.string.edit)
+                            )
                         }
                     } else {
                         IconButton(onClick = {
                             if (state.title.isBlank()) {
                                 showNoTitleDialog = true
                             } else {
-                                onEvent(DetailsEvent.UpdateBook)
+                                if (state.titleChanged || state.authorChanged || state.isbnChanged ||
+                                        state.possessionStatusChanged || state.readStatusChanged||
+                                        state.ratingChanged || state.descriptionChanged
+                                ) {
+                                    onEvent(DetailsEvent.UpdateBook)
+                                }
                                 onEvent(DetailsEvent.SwitchEditing)
                             }
                         }) {
-                            Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.save))
+                            Icon(
+                                Icons.Filled.Check,
+                                contentDescription = stringResource(R.string.save)
+                            )
                         }
                     }
                 }
             )
         }
-    ) {  pad ->
-        val scrollState = rememberScrollState()
+    ) { pad ->
+//        var hideCover by remember { mutableStateOf(false) }
+        var showFullTitle by remember { mutableStateOf(false) }
+        var showFullAuthor by remember { mutableStateOf(false) }
+        val showCover = state.coverImage.isNotBlank() // && !hideCover
+
+        var showEditDialog by remember { mutableStateOf(false) }
+        var curEditType by remember { mutableStateOf(EditType.TITLE) }
 
         if (showConfirmLeaveDialog) {
             AlertDialog(
@@ -149,9 +205,8 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                                 showNoTitleDialog = true
                             } else {
                                 onEvent(DetailsEvent.UpdateBook)
-                                onEvent(DetailsEvent.SwitchEditing)
-                                navController.navigate(Screen.Overview.route)
-                                onEvent(DetailsEvent.ResetState)
+                                navController.popBackStack()
+//                                onEvent(DetailsEvent.ResetState)
                             }
                         }
                     ) {
@@ -161,8 +216,8 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
                 dismissButton = {
                     TextButton(
                         onClick = {
-                            navController.navigate(Screen.Overview.route)
-                            onEvent(DetailsEvent.ResetState)
+                            navController.popBackStack()
+//                            onEvent(DetailsEvent.ResetState)
                         }
                     ) {
                         Text(
@@ -189,113 +244,277 @@ fun DetailsScreenContent(navController: NavController, state: DetailsState, onEv
             )
         }
 
-        Column(
-            modifier = Modifier
-                .padding(12.dp, pad.calculateTopPadding(), 12.dp, 12.dp)
-                .verticalScroll(scrollState)
-                .clip(shape = RoundedCornerShape(10.dp))
-        ) {
-            OutlinedTextField(
-                value = state.title,
-                onValueChange = {
-                    onEvent(DetailsEvent.TitleChanged(it))
-                },
-                label = {
-                    Text(stringResource(R.string.title)
-                                + if(state.titleChanged) "*" else "")
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = state.isEditing
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = state.author,
-                onValueChange = {
-                    onEvent(DetailsEvent.AuthorChanged(it))
-                },
-                label = {
-                    Text(stringResource(R.string.author)
-                                + if(state.authorChanged) "*" else "")
-                },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = state.isEditing
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            if (state.isDoubleIsbn) {
-                Row (
-                    Modifier.fillMaxWidth()
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Warning,
-                        contentDescription = stringResource(R.string.is_double_isbn),
-                        modifier = Modifier.padding(end = 8.dp),
-                        tint = MaterialTheme.colorScheme.error
-                    )
-                    Text(
-                        text = stringResource(R.string.is_double_isbn),
-                        color = MaterialTheme.colorScheme.error
-                    )
+        if (showEditDialog) {
+            var tempValue by remember { mutableStateOf("") }
+
+            LaunchedEffect(key1 = curEditType) {
+                tempValue = when (curEditType) {
+                    EditType.TITLE -> state.title
+                    EditType.AUTHOR -> state.author
+                    EditType.ISBN -> state.isbn
+                    EditType.DESCRIPTION -> state.description
                 }
             }
-            OutlinedTextField(
-                value = state.isbn,
-                onValueChange = {
-                    onEvent(DetailsEvent.IsbnChanged(it))
+
+            AlertDialog(
+                title = {
+                    Text(text = stringResource(
+                        id = R.string.edit_title,
+                        stringResource(curEditType.getTitleStringId)
+                    ))
                 },
-                label = {
-                    Text(stringResource(R.string.isbn)
-                                + if(state.isbnChanged) "*" else "")
+                text = {
+                    OutlinedTextField(
+                        value = tempValue,
+                        onValueChange = { tempValue = it },
+                        label = {
+                            Text(
+                                text = stringResource(
+                                    id = R.string.new_label,
+                                    stringResource(curEditType.getTitleStringId)),
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
                 },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                enabled = state.isEditing
+                onDismissRequest = { showEditDialog = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            when (curEditType) {
+                                EditType.TITLE -> onEvent(DetailsEvent.TitleChanged(tempValue))
+                                EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempValue))
+                                EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempValue))
+                                EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempValue))
+                            }
+                            showEditDialog = false
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.ok))
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { showEditDialog = false }
+                    ) {
+                        Text(text = stringResource(R.string.cancel))
+                    }
+                }
             )
-            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        Column(
+            modifier = Modifier
+                .padding(top = pad.calculateTopPadding()),
+        ) {
             Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 0.dp, start = 12.dp, end = 12.dp, bottom = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = if (showCover) {
+                        Modifier.fillMaxWidth(0.7f)
+                    } else {
+                        Modifier.fillMaxWidth(0.85f)
+                    },
+                    verticalArrangement = Arrangement.Top
                 ) {
-                    Checkbox(
-                        checked = state.possessionStatus,
-                        onCheckedChange = {
-                            onEvent(DetailsEvent.PossessionStatusChanged(it))
-                        },
-                        enabled = state.isEditing
-                    )
-                    Text(stringResource(id = R.string.owned)
-                            + if (state.possessionStatusChanged) "*" else "")
+                    Row {
+                        Text(
+                            text = state.isbn,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    curEditType = EditType.ISBN
+                                    showEditDialog = true
+                                },
+                        )
+                    }
+                    Row {
+                        Text(
+                            text = state.title,
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = if (showFullTitle) Int.MAX_VALUE else 3,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (state.isEditing) {
+                                        curEditType = EditType.TITLE
+                                        showEditDialog = true
+                                    } else {
+                                        showFullTitle = !showFullTitle
+                                    }
+                                },
+                        )
+                    }
+                    Row {
+                        Text(
+                            text = stringResource(R.string.details_by, state.author),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            maxLines = if (showFullAuthor) Int.MAX_VALUE else 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (state.isEditing) {
+                                        curEditType = EditType.AUTHOR
+                                        showEditDialog = true
+                                    } else {
+                                        showFullAuthor = !showFullAuthor
+                                    }
+                                }
+                        )
+                    }
+                    Row(
+                        modifier = if (showCover) {
+                            Modifier.fillMaxWidth(0.85f)
+                        } else {
+                            Modifier.fillMaxWidth(0.7f)
+                        }
+                    ) {
+                        RatingBar(
+                            current = state.rating,
+                            onRatingChanged = { newRating ->
+                                onEvent(DetailsEvent.RatingChanged(newRating))
+                            },
+                            enabled = state.isEditing,
+                            showText = false,
+                        )
+                    }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    modifier = Modifier
+                        .padding(start = 12.dp)
+                        .fillMaxWidth()
                 ) {
-                    Checkbox(
-                        checked = state.readStatus,
-                        onCheckedChange = {
-                            onEvent(DetailsEvent.ReadStatusChanged(it))
-                        },
-                        enabled = state.isEditing
-                    )
-                    Text(stringResource(id = R.string.read)
-                            + if (state.readStatusChanged) "*" else "")
+                    if (showCover) {
+                        Row {
+                            AsyncImage(
+                                model = state.coverImage,
+                                contentDescription = stringResource(id = R.string.cover_image),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(shape = RoundedCornerShape(10.dp))
+                                    .clickable {
+                                        // hideCover = !hideCover
+                                    }
+                            )
+                        }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            PossessionIcon(state, onEvent)
+                            ReadIcon(state, onEvent)
+                        }
+                    }
+                    else {
+                        Row (
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            PossessionIcon(state, onEvent, 1f)
+                        }
+                        Row (
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            ReadIcon(state, onEvent, 1f)
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.width(16.dp))
-                Column{
-                    // Rating with clickable stars
-                    RatingBar(
-                        current = state.rating,
-                        onRatingChanged = { newRating ->
-                            onEvent(DetailsEvent.RatingChanged(newRating))
+            }
+            Spacer(
+                modifier = Modifier
+                    .height(2.dp)
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),
+            )
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
+                    .clickable {
+                        if (state.isEditing) {
+                            curEditType = EditType.DESCRIPTION
+                            showEditDialog = true
+                        }
+                    },
+            ) {
+                Column {
+                    Text(
+                        text = if (state.description.isNotBlank()) {
+                            stringResource(R.string.own_description)
+                        } else {
+                            stringResource(R.string.online_description)
                         },
-                        enabled = state.isEditing,
-                        changed = state.ratingChanged
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = state.description.ifBlank {
+                            state.onlineDescription.ifBlank {
+                                stringResource(R.string.no_description_available)
+                            }
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Justify,
                     )
                 }
             }
         }
     }
+}
+
+@Composable
+fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.4f) {
+    Icon(
+        imageVector = customIconBook(),
+        contentDescription = stringResource(R.string.owned),
+        modifier = Modifier
+            .fillMaxWidth(fillWidth)
+            .clickable {
+                if (state.isEditing) {
+                    onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
+                }
+            },
+        tint = if (state.possessionStatus) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        }
+    )
+}
+
+@Composable
+fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.5f) {
+    Icon(
+        imageVector = if (state.readStatus) {
+            customIconSelectCheckBox()
+        } else {
+            customIconCheckBoxOutlineBlank()
+        },
+        contentDescription = stringResource(R.string.read),
+        modifier = Modifier
+            .fillMaxWidth(fillWidth)
+            .clickable {
+                if (state.isEditing) {
+                    onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
+                }
+            },
+        tint = if (state.readStatus) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+        },
+    )
 }

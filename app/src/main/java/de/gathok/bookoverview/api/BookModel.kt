@@ -1,4 +1,4 @@
-package de.gathok.bookoverview.add.api
+package de.gathok.bookoverview.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

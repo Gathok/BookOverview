@@ -33,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -184,7 +183,7 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
                 modifier = Modifier
                     .clickable { onRestore() }
                     .size(32.dp),
-                tint = Color.Green
+                tint = MaterialTheme.colorScheme.primary
             )
             Icon(
                 imageVector = customIconDeleteForever(),
@@ -192,7 +191,7 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
                 modifier = Modifier
                     .clickable { onDelete() }
                     .size(32.dp),
-                tint = Color.Red
+                tint = MaterialTheme.colorScheme.error
             )
         }
     }

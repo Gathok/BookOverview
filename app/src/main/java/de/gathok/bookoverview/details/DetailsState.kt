@@ -5,6 +5,7 @@ import de.gathok.bookoverview.data.Book
 data class DetailsState(
     val bookId: Int? = null,
     val book: Book? = null,
+
     val title: String = "",
     val titleChanged: Boolean = false,
     val author: String = "",
@@ -17,6 +18,12 @@ data class DetailsState(
     val readStatusChanged: Boolean = false,
     val rating: Int = 0,
     val ratingChanged: Boolean = false,
+    val description: String = "",
+    val descriptionChanged: Boolean = false,
+
     val isEditing: Boolean = false,
     val isDoubleIsbn: Boolean = false,
+
+    val coverImage: String = "",
+    val onlineDescription: String = "",
 )

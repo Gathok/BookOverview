@@ -616,3 +616,101 @@ fun customIconDelete(): ImageVector {
         }.build()
     }
 }
+
+@Composable
+fun customIconSelectCheckBox(): ImageVector {
+    return remember {
+        ImageVector.Builder(
+            name = "select_check_box",
+            defaultWidth = 40.0.dp,
+            defaultHeight = 40.0.dp,
+            viewportWidth = 40.0f,
+            viewportHeight = 40.0f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1f,
+                stroke = null,
+                strokeAlpha = 1f,
+                strokeLineWidth = 1.0f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(19.208f, 28f)
+                lineTo(10f, 18.792f)
+                lineToRelative(1.833f, -1.834f)
+                lineToRelative(7.375f, 7.375f)
+                lineToRelative(15.75f, -15.75f)
+                lineToRelative(1.834f, 1.875f)
+                close()
+                moveTo(7.875f, 34.75f)
+                quadToRelative(-1.083f, 0f, -1.854f, -0.771f)
+                quadToRelative(-0.771f, -0.771f, -0.771f, -1.854f)
+                verticalLineTo(7.875f)
+                quadToRelative(0f, -1.083f, 0.771f, -1.854f)
+                quadToRelative(0.771f, -0.771f, 1.854f, -0.771f)
+                horizontalLineToRelative(24.25f)
+                quadToRelative(0.542f, 0f, 1.042f, 0.25f)
+                reflectiveQuadToRelative(0.791f, 0.542f)
+                lineTo(32f, 8f)
+                verticalLineToRelative(-0.125f)
+                horizontalLineTo(7.875f)
+                verticalLineToRelative(24.25f)
+                horizontalLineToRelative(24.25f)
+                verticalLineToRelative(-13.5f)
+                lineToRelative(2.625f, -2.667f)
+                verticalLineToRelative(16.167f)
+                quadToRelative(0f, 1.083f, -0.771f, 1.854f)
+                quadToRelative(-0.771f, 0.771f, -1.854f, 0.771f)
+                close()
+            }
+        }.build()
+    }
+}
+
+@Composable
+fun customIconCheckBoxOutlineBlank(): ImageVector {
+    return remember {
+        ImageVector.Builder(
+            name = "check_box_outline_blank",
+            defaultWidth = 40.0.dp,
+            defaultHeight = 40.0.dp,
+            viewportWidth = 40.0f,
+            viewportHeight = 40.0f
+        ).apply {
+            path(
+                fill = SolidColor(Color.Black),
+                fillAlpha = 1f,
+                stroke = null,
+                strokeAlpha = 1f,
+                strokeLineWidth = 1.0f,
+                strokeLineCap = StrokeCap.Butt,
+                strokeLineJoin = StrokeJoin.Miter,
+                strokeLineMiter = 1f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(7.875f, 34.75f)
+                quadToRelative(-1.042f, 0f, -1.833f, -0.792f)
+                quadToRelative(-0.792f, -0.791f, -0.792f, -1.833f)
+                verticalLineTo(7.875f)
+                quadToRelative(0f, -1.042f, 0.792f, -1.833f)
+                quadToRelative(0.791f, -0.792f, 1.833f, -0.792f)
+                horizontalLineToRelative(24.25f)
+                quadToRelative(1.042f, 0f, 1.833f, 0.792f)
+                quadToRelative(0.792f, 0.791f, 0.792f, 1.833f)
+                verticalLineToRelative(24.25f)
+                quadToRelative(0f, 1.042f, -0.792f, 1.833f)
+                quadToRelative(-0.791f, 0.792f, -1.833f, 0.792f)
+                close()
+                moveToRelative(0f, -2.625f)
+                horizontalLineToRelative(24.25f)
+                verticalLineTo(7.875f)
+                horizontalLineTo(7.875f)
+                verticalLineToRelative(24.25f)
+                close()
+            }
+        }.build()
+    }
+}

@@ -23,6 +23,8 @@ import de.gathok.bookoverview.add.AddViewModel
 import de.gathok.bookoverview.add.scanner.ScannerScreen
 import de.gathok.bookoverview.data.BookDatabase
 import de.gathok.bookoverview.data.MIGRATION_1_2
+import de.gathok.bookoverview.data.MIGRATION_1_3
+import de.gathok.bookoverview.data.MIGRATION_2_3
 import de.gathok.bookoverview.details.DetailsEvent
 import de.gathok.bookoverview.details.DetailsScreen
 import de.gathok.bookoverview.details.DetailsState
@@ -48,6 +50,8 @@ class MainActivity : ComponentActivity() {
             "books.db"
         )
             .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_1_3)
+            .addMigrations(MIGRATION_2_3)
             .build()
     }
     private val overviewViewModel by viewModels<OverviewViewModel>(
@@ -129,7 +133,11 @@ fun NavGraph(overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Uni
         composable(Screen.Details.route + "/{bookId}") { backStackEntry ->
             val arguments = backStackEntry.arguments
             val bookIdString = arguments?.getString("bookId")
-            val bookId = bookIdString?.toInt()
+            val bookId = try {
+                bookIdString?.toInt()
+            } catch (e: Exception) {
+                null
+            }
             DetailsScreen(navController, detailsState, detailsEvent, bookId)
         }
         composable(Screen.Settings.route) {

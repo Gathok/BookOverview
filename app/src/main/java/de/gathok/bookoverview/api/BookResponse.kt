@@ -1,4 +1,4 @@
-package de.gathok.bookoverview.add.api
+package de.gathok.bookoverview.api
 
 data class BookResponse(
     val kind: String,
@@ -16,13 +16,13 @@ data class BookItem(
 
 data class VolumeInfo(
     val title: String,
-    val subtitle: String,
     val authors: List<String>,
-    val publishedDate: String,
-    val industryIdentifiers: List<IndustryIdentifier>
+    val description: String,
+    val pageCount: Int,
+    val imageLinks: ImageLinks,
 )
 
-data class IndustryIdentifier(
-    val type: String,
-    val identifier: String
+data class ImageLinks(
+    val smallThumbnail: String,
+    val thumbnail: String
 )

@@ -1,4 +1,4 @@
-package de.gathok.bookoverview.add.api
+package de.gathok.bookoverview.api
 
 import retrofit2.http.GET
 import retrofit2.http.Query

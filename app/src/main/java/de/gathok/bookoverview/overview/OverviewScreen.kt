@@ -29,7 +29,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -80,8 +79,10 @@ import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.customIconBook
+import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
 import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.ui.customIconFilterList
+import de.gathok.bookoverview.ui.customIconSelectCheckBox
 import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
 import kotlinx.coroutines.CoroutineScope
@@ -303,7 +304,7 @@ fun OverviewScreen(
                 hostState = snackbarHostState,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 64.dp, start = 16.dp, end = 16.dp),
+                    .padding(bottom = 64.dp, start = 12.dp, end = 12.dp),
             ) { snackbarData: SnackbarData ->
                 Snackbar(
                     snackbarData = snackbarData,
@@ -340,7 +341,7 @@ fun BookItem(book: Book) {
                 text = book.title,
                 modifier = Modifier.padding(end = 8.dp),
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
@@ -355,24 +356,18 @@ fun BookItem(book: Book) {
         Column (
             horizontalAlignment = Alignment.End,
         ) {
-            if (book.possessionStatus) {
-                Icon(
-                    imageVector = customIconBook(),
-                    contentDescription = stringResource(id = R.string.owned),
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                Text(
-                    text = " ",
-                )
-            }
-            if (book.readStatus) {
-                Icon(
-                    imageVector = Icons.Filled.CheckCircle,
-                    contentDescription = stringResource(id = R.string.read),
-                    tint = Color.Green,
-                )
-            }
+            Icon(
+                imageVector = customIconBook(),
+                contentDescription = stringResource(id = R.string.owned),
+                modifier = Modifier.size(24.dp),
+                tint = if (book.possessionStatus) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+            )
+            Icon(
+                imageVector = if (book.readStatus) customIconSelectCheckBox() else customIconCheckBoxOutlineBlank(),
+                contentDescription = stringResource(id = R.string.read),
+                modifier = Modifier.size(24.dp),
+                tint = if (book.readStatus) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+            )
         }
     }
 }
@@ -616,10 +611,10 @@ fun SwipeBackground(
 ) {
     val color = when (swipeToDismissBoxState.dismissDirection) {
         SwipeToDismissBoxValue.StartToEnd -> {
-            Color.Green
+            MaterialTheme.colorScheme.primary
         }
         SwipeToDismissBoxValue.EndToStart -> {
-            Color.Red
+            MaterialTheme.colorScheme.error
         }
         else -> Color.Transparent
     }
