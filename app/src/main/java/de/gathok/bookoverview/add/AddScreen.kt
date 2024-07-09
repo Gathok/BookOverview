@@ -102,7 +102,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
+                    IconButton(onClick = { navController.navigate(Screen.Overview.route) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -125,7 +125,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                             }
                         } else {
                             onEvent(AddEvent.AddBook)
-                            navController.popBackStack()
+                            navController.navigate(Screen.Overview.route)
                         }
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.submit))
@@ -162,7 +162,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                     TextButton(onClick = {
                         showIncompleteError = false
                         onEvent(AddEvent.AddBook)
-                        navController.popBackStack()
+                        navController.navigate(Screen.Overview.route)
                     }) {
                         Text(stringResource(R.string.yes))
                     }
