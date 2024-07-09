@@ -304,8 +304,10 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    curEditType = EditType.ISBN
-                                    showEditDialog = true
+                                    if (state.isEditing) {
+                                        curEditType = EditType.ISBN
+                                        showEditDialog = true
+                                    }
                                 },
                         )
                     }
