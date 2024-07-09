@@ -49,6 +49,9 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
     var currentBook: Book? = null
     var showDialog by remember { mutableStateOf(false) }
 
+    var confirmType by remember { mutableStateOf(TrashConfirmType.RESTORE_ALL) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
+
     Scaffold (
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -61,6 +64,26 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(id = R.string.back)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        confirmType = TrashConfirmType.RESTORE_ALL
+                        showConfirmDialog = true
+                    }) {
+                        Icon(
+                            imageVector = customIconRestoreFromTrash(),
+                            contentDescription = stringResource(id = R.string.restore_all)
+                        )
+                    }
+                    IconButton(onClick = {
+                        confirmType = TrashConfirmType.DELETE_ALL
+                        showConfirmDialog = true
+                    }) {
+                        Icon(
+                            imageVector = customIconDeleteForever(),
+                            contentDescription = stringResource(id = R.string.delete_all)
                         )
                     }
                 }
@@ -102,6 +125,60 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                 },
                 text = {
                     Text(stringResource(id = R.string.restore_or_delete_desc, currentBook!!.title))
+                },
+            )
+        }
+
+        if (showConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            when (confirmType) {
+                                TrashConfirmType.DELETE_ALL -> onEvent(SettingsEvent.OnTrashDeleteAllClicked)
+                                TrashConfirmType.RESTORE_ALL -> onEvent(SettingsEvent.OnTrashRestoreAllClicked)
+                            }
+                            showConfirmDialog = false
+                        }
+                    ) {
+                        Text(
+                            text = when (confirmType) {
+                                TrashConfirmType.DELETE_ALL ->
+                                    "${stringResource(R.string.yes)}, ${stringResource(R.string.delete_all)}"
+                                TrashConfirmType.RESTORE_ALL ->
+                                    "${stringResource(R.string.yes)}, ${stringResource(R.string.restore_all)}"
+                            }
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showConfirmDialog = false
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.cancel),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                title = {
+                    Text(
+                        text = when (confirmType) {
+                            TrashConfirmType.DELETE_ALL -> stringResource(id = R.string.delete_all)
+                            TrashConfirmType.RESTORE_ALL -> stringResource(id = R.string.restore_all)
+                        }
+                    )
+                },
+                text = {
+                    Text(
+                        text = when (confirmType) {
+                            TrashConfirmType.DELETE_ALL -> stringResource(id = R.string.delete_all_desc)
+                            TrashConfirmType.RESTORE_ALL -> stringResource(id = R.string.restore_all_desc)
+                        }
+                    )
                 },
             )
         }

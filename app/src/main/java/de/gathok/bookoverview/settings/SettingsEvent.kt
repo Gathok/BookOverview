@@ -9,4 +9,7 @@ sealed class SettingsEvent {
     data object OnTrashClicked : SettingsEvent()
     data class OnTrashRestoreClicked(val book: Book) : SettingsEvent()
     data class OnTrashDeleteClicked(val book: Book) : SettingsEvent()
+    data object OnTrashDeleteAllClicked : SettingsEvent()
+    data object OnTrashRestoreAllClicked : SettingsEvent()
+
 }

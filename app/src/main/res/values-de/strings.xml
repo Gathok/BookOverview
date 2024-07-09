@@ -58,4 +58,7 @@
     <string name="description">Beschreibung</string>
     <string name="new_label">Neue(r) %1$s</string>
     <string name="cancel">Abbrechen</string>
+    <string name="scan_isbn">ISBN scannen</string>
+    <string name="delete_all">Alle löschen</string>
+    <string name="restore_all">Alle wiederherstellen</string>
 </resources>

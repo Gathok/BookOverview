@@ -56,6 +56,18 @@ class SettingsViewModel (
                     }
                 }
             }
+            SettingsEvent.OnTrashDeleteAllClicked -> {
+                viewModelScope.launch {
+                    dao.emptyTrash()
+                    _state.value = _state.value.copy(trashedBooks = emptyList())
+                }
+            }
+            SettingsEvent.OnTrashRestoreAllClicked -> {
+                viewModelScope.launch {
+                    dao.restoreAllTrash()
+                    _state.value = _state.value.copy(trashedBooks = emptyList())
+                }
+            }
         }
     }
 }
