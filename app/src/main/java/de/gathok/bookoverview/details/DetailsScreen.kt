@@ -51,31 +51,6 @@ import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
 import de.gathok.bookoverview.ui.customIconSelectCheckBox
 
 
-//@Composable
-//fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
-//                  bookId: Int?) {
-//
-//    if (bookId == null || state.bookId == 0) {
-//        AlertDialog(
-//            title = { Text(stringResource(R.string.error)) },
-//            text = { Text(stringResource(R.string.error_message)) },
-//            onDismissRequest = { navController.popBackStack() },
-//            confirmButton = {
-//                TextButton(
-//                    onClick = { navController.popBackStack() }
-//                ) {
-//                    Text("OK")
-//                }
-//            }
-//        )
-//    } else {
-//        LaunchedEffect(key1 = bookId) {
-//            onEvent(DetailsEvent.FetchBook(bookId))
-//        }
-//        DetailsScreenContent(navController, state, onEvent)
-//    }
-//}
-
 @Composable
 fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
                   bookId: Int?) {
@@ -124,7 +99,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             showConfirmLeaveDialog = true
         } else {
             navController.popBackStack()
-//            onEvent(DetailsEvent.ResetState)
         }
     }
 
@@ -184,7 +158,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             )
         }
     ) { pad ->
-//        var hideCover by remember { mutableStateOf(false) }
         var showFullTitle by remember { mutableStateOf(false) }
         var showFullAuthor by remember { mutableStateOf(false) }
         val showCover = state.coverImage.isNotBlank() // && !hideCover
@@ -206,7 +179,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             } else {
                                 onEvent(DetailsEvent.UpdateBook)
                                 navController.popBackStack()
-//                                onEvent(DetailsEvent.ResetState)
                             }
                         }
                     ) {
@@ -217,7 +189,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     TextButton(
                         onClick = {
                             navController.popBackStack()
-//                            onEvent(DetailsEvent.ResetState)
                         }
                     ) {
                         Text(
@@ -325,7 +296,11 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                         Text(
                             text = state.isbn,
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = if (state.isbnChanged) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
@@ -338,6 +313,11 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                         Text(
                             text = state.title,
                             style = MaterialTheme.typography.titleLarge,
+                            color = if (state.titleChanged) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                             maxLines = if (showFullTitle) Int.MAX_VALUE else 3,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -356,7 +336,11 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                         Text(
                             text = stringResource(R.string.details_by, state.author),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                            color = if (state.authorChanged) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+                            } else {
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                            },
                             maxLines = if (showFullAuthor) Int.MAX_VALUE else 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
@@ -456,7 +440,11 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             stringResource(R.string.online_description)
                         },
                         style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = if (state.descriptionChanged) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                     )
                     Text(
                         text = state.description.ifBlank {

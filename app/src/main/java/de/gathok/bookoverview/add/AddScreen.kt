@@ -46,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -55,9 +54,8 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.api.BookModel
-import de.gathok.bookoverview.ui.theme.ratingStars
-import de.gathok.bookoverview.util.Screen
 import de.gathok.bookoverview.ui.customIconBarcodeScanner
+import de.gathok.bookoverview.util.Screen
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -324,7 +322,9 @@ fun RatingBar(
                         .padding(horizontal = 4.dp)
                         .weight(1f) // This will divide the available space equally between the stars
                         .aspectRatio(1f), // This will make the stars square
-                    tint = if (i <= current) ratingStars else Color.Gray,
+                    tint =
+                        if (i <= current) MaterialTheme.colorScheme.tertiary
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
                 )
             }
         }
