@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
@@ -83,7 +84,6 @@ import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
 import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.ui.customIconFilterList
 import de.gathok.bookoverview.ui.customIconSelectCheckBox
-import de.gathok.bookoverview.ui.theme.ratingStars
 import de.gathok.bookoverview.util.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -329,29 +329,37 @@ fun BookItem(book: Book) {
                 .weight(1f)
                 .fillMaxWidth(1f)
         ) {
-            Text(
-                text = book.getRatingString(),
-                modifier = Modifier.padding(end = 8.dp),
-                color = when (book.rating) {
-                    in 1..5 -> ratingStars
-                    else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            Row {
+                for (i in 1..5) {
+                    Icon(
+                        imageVector = Icons.Filled.Star,
+                        contentDescription = stringResource(id = R.string.rating),
+                        modifier = Modifier.size(16.dp),
+                        tint =
+                            if (book.rating != null && i <= book.rating!!) MaterialTheme.colorScheme.tertiary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                    )
                 }
-            )
-            Text(
-                text = book.title,
-                modifier = Modifier.padding(end = 8.dp),
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = book.author,
-                modifier = Modifier.padding(end = 8.dp),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            }
+            Row {
+                Text(
+                    text = book.title,
+                    modifier = Modifier.padding(end = 8.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Row {
+                Text(
+                    text = book.author,
+                    modifier = Modifier.padding(end = 8.dp),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
         Column (
             horizontalAlignment = Alignment.End,
