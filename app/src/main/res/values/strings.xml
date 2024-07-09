@@ -60,4 +60,5 @@
     <string name="description">Description</string>
     <string name="new_label">New %1$s</string>
     <string name="cancel">Cancel</string>
+    <string name="scan_isbn">Scan ISBN</string>
 </resources>
