@@ -83,11 +83,13 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 isbn = "isbn:$isbnFromNav"
             )
             try {
+                onEvent(AddEvent.TitleChanged(""))
+                onEvent(AddEvent.AuthorChanged(""))
                 onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
                 onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
             } catch (e: Exception) {
                 errorTitleResource = R.string.error_scan
-                if (bookResponse.totalItems == 0 || state.title.isBlank()) {
+                if (state.title.isBlank()) {
                     errorMessageResource = R.string.error_msg_scan
                 } else {
                     errorMessageResource = R.string.error_msg_scan_author

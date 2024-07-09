@@ -25,11 +25,10 @@ class AddViewModel (
                 _state.value = _state.value.copy(author = event.author)
             }
             is AddEvent.IsbnChanged -> {
-                val newIsbn = event.isbn
-                _state.value = _state.value.copy(isbn = newIsbn)
+                _state.value = _state.value.copy(isbn = event.isbn)
                 //check if isbn is already in the database
                 viewModelScope.launch {
-                    dao.getBookByIsbn(newIsbn).collect { book ->
+                    dao.checkForDoubleIsbn(event.isbn).collect { book ->
                         _state.value = _state.value.copy(isDoubleIsbn = book != null)
                     }
                 }

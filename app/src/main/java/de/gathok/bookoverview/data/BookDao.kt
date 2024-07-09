@@ -35,6 +35,9 @@ interface BookDao{
     @Query("SELECT * FROM book WHERE isbn = :isbn")
     fun getBookByIsbn(isbn: String): Flow<Book?>
 
+    @Query("SELECT * FROM book WHERE isbn = :isbn AND deletedSince = 0")
+    fun checkForDoubleIsbn(isbn: String): Flow<Book?>
+
     @RawQuery(observedEntities = [Book::class])
     fun rawQuery(query: SupportSQLiteQuery): Flow<List<Book>>
 }
