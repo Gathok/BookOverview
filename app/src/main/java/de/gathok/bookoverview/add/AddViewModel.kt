@@ -72,6 +72,25 @@ class AddViewModel (
             AddEvent.ClearFields -> {
                 _state.value = AddState()
             }
+
+            is AddEvent.SetImageUrl -> {
+                _state.value = _state.value.copy(imageUrl = event.imageUrl)
+            }
+            is AddEvent.SetOnlineDescription -> {
+                _state.value = _state.value.copy(onlineDescription = event.onlineDescription)
+            }
+            is AddEvent.SetPageCount -> {
+                _state.value = _state.value.copy(pageCount = event.pageCount)
+            }
+            is AddEvent.SetSeries -> {
+                val bookSeries = event.series
+                _state.value = _state.value.copy(series = bookSeries)
+                bookSeries.insertBook(event.place, _state.value.isbn)
+
+                viewModelScope.launch {
+                    dao.upsertBookSeries(bookSeries)
+                }
+            }
         }
     }
 }

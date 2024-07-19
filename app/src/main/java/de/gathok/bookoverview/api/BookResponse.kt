@@ -1,20 +1,6 @@
 package de.gathok.bookoverview.api
 
-data class BookResponse(
-    val kind: String,
-    val totalItems: Int,
-    val items: List<BookItem>
-)
-
-data class BookItem(
-    val kind: String,
-    val id: String,
-    val etag: String,
-    val selfLink: String,
-    val volumeInfo: VolumeInfo
-)
-
-data class VolumeInfo(
+data class GoogleBookResponse(
     val title: String,
     val authors: List<String>,
     val description: String,

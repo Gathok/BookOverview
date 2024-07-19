@@ -49,6 +49,10 @@ import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
 import de.gathok.bookoverview.ui.customIconSelectCheckBox
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 
 @Composable
@@ -74,16 +78,9 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
             onEvent(DetailsEvent.DescriptionChanged(state.book.description))
 
-            val bookResponse = BookModel.bookService.getBook(
-                isbn = "isbn:${state.book.isbn}"
-            )
-            try {
-                val imageUrl = bookResponse.items[0].volumeInfo.imageLinks.thumbnail
-                onEvent(DetailsEvent.SetCoverImage(imageUrl))
-                onEvent(DetailsEvent.SetOnlineDescription(bookResponse.items[0].volumeInfo.description))
-            } catch (e: Exception) {
-                // No cover image found
-            }
+            onEvent(DetailsEvent.SetOnlineDescription(state.book.onlineDescription ?: ""))
+            onEvent(DetailsEvent.SetPageCount(state.book.pageCount))
+            onEvent(DetailsEvent.SetCoverImage(state.book.imageUrl ?: ""))
         }
     }
 
@@ -160,7 +157,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
     ) { pad ->
         var showFullTitle by remember { mutableStateOf(false) }
         var showFullAuthor by remember { mutableStateOf(false) }
-        val showCover = state.coverImage.isNotBlank() // && !hideCover
+        var showCover by remember { mutableStateOf(state.coverImage.isNotBlank()) }
 
         var showEditDialog by remember { mutableStateOf(false) }
         var curEditType by remember { mutableStateOf(EditType.TITLE) }

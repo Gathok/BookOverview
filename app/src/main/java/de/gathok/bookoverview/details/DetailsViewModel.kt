@@ -85,7 +85,7 @@ class DetailsViewModel (
             }
 
             is DetailsEvent.SetCoverImage -> {
-                _state.value = _state.value.copy(coverImage = event.coverImage)
+                _state.value = _state.value.copy(coverImage = event.coverImageUrl)
             }
 
             is DetailsEvent.SetOnlineDescription -> {
@@ -118,6 +118,16 @@ class DetailsViewModel (
 
             DetailsEvent.ResetState -> {
                 _state.value = DetailsState()
+            }
+
+            is DetailsEvent.SetPageCount -> {
+                _state.value = _state.value.copy(pageCount = event.pageCount)
+            }
+            is DetailsEvent.SetSeries -> {
+                val bookSeries = event.series
+                if (_state.value.book != null && bookSeries != null) {
+                    val place = _state.value.book?.getPlaceInOrder()
+                }
             }
         }
     }

@@ -2,6 +2,7 @@ package de.gathok.bookoverview.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import de.gathok.bookoverview.details.DetailsEvent
 import java.text.DateFormat.getDateInstance
 import java.util.Date
 
@@ -14,9 +15,13 @@ data class Book(
     var readStatus: Boolean = false,
     var rating: Int? = null,
     var description: String = "",
+    var onlineDescription: String? = null,
+    var pageCount: Int? = null,
+    var imageUrl: String? = null,
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    var deletedSince: Long = 0
+    var deletedSince: Long = 0,
+    var seriesId: Int? = null,
 ) {
 
     fun getRatingString(): String {

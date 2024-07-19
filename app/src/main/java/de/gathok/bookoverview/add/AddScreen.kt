@@ -54,8 +54,14 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.api.BookModel
+import de.gathok.bookoverview.api.GoogleBookResponse
+import de.gathok.bookoverview.data.BookSeries
 import de.gathok.bookoverview.ui.customIconBarcodeScanner
 import de.gathok.bookoverview.util.Screen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,14 +83,48 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
     LaunchedEffect (key1 = isbnFromNav) {
         if (isbnFromNav != null) {
             onEvent(AddEvent.IsbnChanged(isbnFromNav))
-            val bookResponse = BookModel.bookService.getBook(
-                isbn = "isbn:$isbnFromNav"
-            )
+            var googleBookResponse: GoogleBookResponse
             try {
+                googleBookResponse = BookModel.googleBookService.getBookByIsbn(isbnFromNav)
                 onEvent(AddEvent.TitleChanged(""))
                 onEvent(AddEvent.AuthorChanged(""))
-                onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
-                onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
+                onEvent(AddEvent.TitleChanged(googleBookResponse.title))
+                onEvent(AddEvent.AuthorChanged(googleBookResponse.authors.joinToString(separator = ", ")))
+                try {
+                    onEvent(AddEvent.SetOnlineDescription(googleBookResponse.description))
+                } catch (_: Exception) { }
+                try {
+                    onEvent(AddEvent.SetPageCount(googleBookResponse.pageCount))
+                } catch (_: Exception) { }
+
+                val openLibraryResponse = BookModel.openLibraryService.getBookByIsbn(isbnFromNav)
+
+                if (state.pageCount == null) {
+                    try {
+                        val pageCount = openLibraryResponse.numberOfPages
+                        if (pageCount != null) {
+                            onEvent(AddEvent.SetPageCount(pageCount))
+                        }
+                    } catch (_: Exception) { }
+                }
+
+                try {
+                    val seriesResponse = openLibraryResponse.series?.get(0)?.split("  #")
+                    if (seriesResponse != null) {
+                        val bookSeries = BookSeries(seriesResponse[0])
+                        onEvent(AddEvent.SetSeries(seriesResponse[1].toInt(), bookSeries))
+                    }
+                } catch (_: Exception) { }
+
+                val imageUrl = "https://covers.openlibrary.org/b/isbn/${isbnFromNav}-M.jpg"
+                if (isImageAvailable(imageUrl)) {
+                    onEvent(AddEvent.SetImageUrl(imageUrl))
+                } else {
+                    try {
+                        onEvent(AddEvent.SetImageUrl(googleBookResponse.imageLinks.thumbnail))
+                    } catch (_: Exception) { }
+                }
+
             } catch (e: Exception) {
                 errorTitleResource = R.string.error_scan
                 if (state.title.isBlank()) {
@@ -94,6 +134,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 }
                 showError = true
             }
+
         }
     }
 
@@ -342,10 +383,15 @@ fun RatingBar(
     }
 }
 
-//@Preview
-//@Composable
-//fun AddBookScreenPreview() {
-//    BookOverviewTheme {
-//        AddBookScreen()
-//    }
-//}
+suspend fun isImageAvailable(url: String): Boolean = withContext(Dispatchers.IO) {
+    try {
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+        val response = client.newCall(request).execute()
+        // Optionally check for content type or size
+        // val contentType = response.header("Content-Type")
+        response.isSuccessful // true if response code is 200-299
+    } catch (e: Exception) {
+        false
+    }
+}

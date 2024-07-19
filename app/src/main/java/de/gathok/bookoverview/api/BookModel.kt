@@ -12,11 +12,19 @@ object BookModel {
         .addInterceptor(logging)
         .build()
 
-    val retrofit = Retrofit.Builder()
+    val openLibraryRetrofit = Retrofit.Builder()
+        .baseUrl("https://openlibrary.org/")
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+
+    val googleRetrofit = Retrofit.Builder()
         .baseUrl("https://www.googleapis.com/books/v1/")
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
-    val bookService = retrofit.create(BookService::class.java)
+    val openLibraryService = openLibraryRetrofit.create(OpenLibraryService::class.java)
+
+    val googleBookService = googleRetrofit.create(GoogleBookService::class.java)
 }

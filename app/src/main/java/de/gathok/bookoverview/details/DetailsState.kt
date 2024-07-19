@@ -26,4 +26,6 @@ data class DetailsState(
 
     val coverImage: String = "",
     val onlineDescription: String = "",
+    val pageCount: Int? = null,
+    val seriesString: String = "",
 )

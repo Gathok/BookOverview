@@ -36,14 +36,18 @@ interface BookDao{
     suspend fun restoreAllTrash()
 
     @Query("SELECT * FROM book WHERE id = :id")
-    fun getBookById(id: Int): Flow<Book?>
+    suspend fun getBookById(id: Int): Flow<Book?>
 
     @Query("SELECT * FROM book WHERE isbn = :isbn")
-    fun getBookByIsbn(isbn: String): Flow<Book?>
+    suspend fun getBookByIsbn(isbn: String): Flow<Book?>
 
     @Query("SELECT * FROM book WHERE isbn = :isbn AND deletedSince = 0")
-    fun checkForDoubleIsbn(isbn: String): Flow<Book?>
+    suspend fun checkForDoubleIsbn(isbn: String): Flow<Book?>
 
     @RawQuery(observedEntities = [Book::class])
-    fun rawQuery(query: SupportSQLiteQuery): Flow<List<Book>>
+    suspend fun rawQuery(query: SupportSQLiteQuery): Flow<List<Book>>
+
+
+    @Upsert
+    suspend fun upsertBookSeries(bookSeries: BookSeries)
 }

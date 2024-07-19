@@ -6,8 +6,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Book::class],
-    version = 3,
+    entities = [Book::class, BookSeries::class],
+    version = 4,
     exportSchema = false
 )
 abstract class BookDatabase: RoomDatabase() {

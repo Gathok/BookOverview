@@ -1,5 +1,7 @@
 package de.gathok.bookoverview.add
 
+import de.gathok.bookoverview.data.BookSeries
+
 data class AddState(
     val title: String = "",
     val author: String = "",
@@ -10,4 +12,9 @@ data class AddState(
     val cameraPermissionGranted: Boolean = false,
     val isScanning: Boolean = false,
     val isDoubleIsbn: Boolean = false,
+
+    val onlineDescription: String? = null,
+    val pageCount: Int? = null,
+    val imageUrl: String? = null,
+    val series: BookSeries? = null,
 )
