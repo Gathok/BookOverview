@@ -2,6 +2,7 @@
 
 package de.gathok.bookoverview.add
 
+import android.widget.Toast
 import androidx.camera.core.ExperimentalGetImage
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -293,8 +295,17 @@ fun RatingBar(
     onRatingChanged: (Int) -> Unit,
     enabled: Boolean = true,
     changed: Boolean = false,
-    showText: Boolean = true
+    showText: Boolean = true,
+    activeColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.tertiary,
+    inactiveColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
 ) {
+
+    val notEditingToast = Toast.makeText(
+        LocalContext.current,
+        stringResource(id = R.string.not_editing_desc),
+        Toast.LENGTH_SHORT
+    )
+
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -311,11 +322,15 @@ fun RatingBar(
                             onClick = {
                                 if (enabled) {
                                     onRatingChanged(i)
+                                } else {
+                                    notEditingToast.show()
                                 }
                             },
                             onLongClick = {
                                 if (enabled) {
                                     onRatingChanged(0)
+                                } else {
+                                    notEditingToast.show()
                                 }
                             }
                         )
@@ -323,8 +338,8 @@ fun RatingBar(
                         .weight(1f) // This will divide the available space equally between the stars
                         .aspectRatio(1f), // This will make the stars square
                     tint =
-                        if (i <= current) MaterialTheme.colorScheme.tertiary
-                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                        if (i <= current) activeColor
+                        else inactiveColor,
                 )
             }
         }

@@ -13,8 +13,8 @@ android {
         applicationId = "de.gathok.bookoverview"
         minSdk = 34
         targetSdk = 34
-        versionCode = 3412030
-        versionName = "0.3"
+        versionCode = 3412040
+        versionName = "0.4-preview"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -84,7 +84,6 @@ dependencies {
     implementation(libs.barcode.scanning)
 
     // CameraX
-    val cameraxVersion = "1.4.0-alpha02"
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
