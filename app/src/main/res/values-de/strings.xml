@@ -64,4 +64,5 @@
     <string name="delete_all_desc">Sollen wirklich alle Bücher gelöscht werden?</string>
     <string name="restore_all_desc">Sollen sicher alle Bücher wiederhergestellt werden?</string>
     <string name="not_editing_desc">Die Bearbeitung ist nicht aktiviert.</string>
+    <string name="auto_complete">Automatisch vervollständigen</string>
 </resources>

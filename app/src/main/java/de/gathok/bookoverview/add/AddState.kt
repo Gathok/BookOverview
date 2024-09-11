@@ -10,4 +10,5 @@ data class AddState(
     val cameraPermissionGranted: Boolean = false,
     val isScanning: Boolean = false,
     val isDoubleIsbn: Boolean = false,
+    val showCompleteWithIsbn: Boolean = false,
 )

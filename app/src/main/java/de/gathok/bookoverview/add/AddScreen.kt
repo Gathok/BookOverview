@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Star
@@ -62,8 +63,9 @@ import de.gathok.bookoverview.util.Screen
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit, isbnFromNav: String? = null) {
+fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit, pIsbnFromNav: String? = null) {
 
+    var isbnFromNav by remember { mutableStateOf(pIsbnFromNav) }
     // General error
     var showError by remember { mutableStateOf(false) }
     var errorTitleResource by remember { mutableIntStateOf(R.string.error) }
@@ -78,24 +80,17 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
     // If an ISBN is passed from the scanner, fetch the book data
     LaunchedEffect (key1 = isbnFromNav) {
         if (isbnFromNav != null) {
-            onEvent(AddEvent.IsbnChanged(isbnFromNav))
-            val bookResponse = BookModel.bookService.getBook(
-                isbn = "isbn:$isbnFromNav"
+            val errorTriple = completeWithIsbn(
+                onEvent,
+                isbnFromNav!!,
+                errorTitleResource,
+                state,
+                errorMessageResource,
+                showError
             )
-            try {
-                onEvent(AddEvent.TitleChanged(""))
-                onEvent(AddEvent.AuthorChanged(""))
-                onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
-                onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
-            } catch (e: Exception) {
-                errorTitleResource = R.string.error_scan
-                if (state.title.isBlank()) {
-                    errorMessageResource = R.string.error_msg_scan
-                } else {
-                    errorMessageResource = R.string.error_msg_scan_author
-                }
-                showError = true
-            }
+            errorTitleResource = errorTriple.first
+            errorMessageResource = errorTriple.second
+            showError = errorTriple.third
         }
     }
 
@@ -230,19 +225,31 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 trailingIcon = {
-                    Icon(
-                        imageVector = customIconBarcodeScanner(),
-                        contentDescription = stringResource(R.string.scan),
-                        modifier = Modifier
-                            .clickable {
-                                if (cameraPermission.status.isGranted) {
-                                    navController.navigate(Screen.Scanner.route)
-                                } else {
-                                    cameraPermission.launchPermissionRequest()
+                    if (state.showCompleteWithIsbn) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = stringResource(R.string.auto_complete),
+                            modifier = Modifier
+                                .clickable {
+                                    isbnFromNav = state.isbn
                                 }
-                            }
-                            .padding(end = 8.dp)
-                    )
+                                .padding(end = 8.dp)
+                        )
+                    } else {
+                        Icon(
+                            imageVector = customIconBarcodeScanner(),
+                            contentDescription = stringResource(R.string.scan),
+                            modifier = Modifier
+                                .clickable {
+                                    if (cameraPermission.status.isGranted) {
+                                        navController.navigate(Screen.Scanner.route)
+                                    } else {
+                                        cameraPermission.launchPermissionRequest()
+                                    }
+                                }
+                                .padding(end = 8.dp)
+                        )
+                    }
                 }
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -285,6 +292,39 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
             }
         }
     }
+}
+
+private suspend fun completeWithIsbn(
+    onEvent: (AddEvent) -> Unit,
+    isbnFromNav: String,
+    pErrorTitleResource: Int,
+    state: AddState,
+    pErrorMessageResource: Int,
+    pShowError: Boolean
+): Triple<Int, Int, Boolean> {
+    var errorTitleResource = pErrorTitleResource
+    var errorMessageResource = pErrorMessageResource
+    var showError = pShowError
+    onEvent(AddEvent.IsbnChanged(isbnFromNav))
+    val bookResponse = BookModel.bookService.getBook(
+        isbn = "isbn:$isbnFromNav"
+    )
+    try {
+        onEvent(AddEvent.TitleChanged(""))
+        onEvent(AddEvent.AuthorChanged(""))
+        onEvent(AddEvent.TitleChanged(bookResponse.items[0].volumeInfo.title))
+        onEvent(AddEvent.AuthorChanged(bookResponse.items[0].volumeInfo.authors.joinToString(", ")))
+    } catch (e: Exception) {
+        errorTitleResource = R.string.error_scan
+        errorMessageResource = if (state.title.isBlank()) {
+            R.string.error_msg_scan
+        } else {
+            R.string.error_msg_scan_author
+        }
+        showError = true
+    }
+    //return list of errorTitleResource, errorMessageResource, showError
+    return Triple(errorTitleResource, errorMessageResource, showError)
 }
 
 @OptIn(ExperimentalFoundationApi::class)

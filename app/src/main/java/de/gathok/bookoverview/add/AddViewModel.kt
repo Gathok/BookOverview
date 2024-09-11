@@ -1,5 +1,6 @@
 package de.gathok.bookoverview.add
 
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.gathok.bookoverview.data.Book
@@ -25,12 +26,23 @@ class AddViewModel (
                 _state.value = _state.value.copy(author = event.author)
             }
             is AddEvent.IsbnChanged -> {
-                _state.value = _state.value.copy(isbn = event.isbn)
-                //check if isbn is already in the database
-                viewModelScope.launch {
-                    dao.checkForDoubleIsbn(event.isbn).collect { book ->
-                        _state.value = _state.value.copy(isDoubleIsbn = book != null)
+                val isbn = event.isbn
+                    .replace("-", "")
+                    .replace(" ", "")
+                _state.value = _state.value.copy(isbn =
+                    isbn
+                )
+                //check if isbn is already in the database and if it is a valid isbn to show the complete button
+                if (isbn.length == 13 && isbn.isDigitsOnly()) {
+                    viewModelScope.launch {
+                        dao.checkForDoubleIsbn(isbn).collect { book ->
+                            _state.value = _state.value.copy(isDoubleIsbn = book != null)
+                        }
                     }
+                    _state.value = _state.value.copy(showCompleteWithIsbn = true)
+                } else {
+                    _state.value = _state.value.copy(isDoubleIsbn = false)
+                    _state.value = _state.value.copy(showCompleteWithIsbn = false)
                 }
             }
             is AddEvent.PossessionStatusChanged -> {
