@@ -26,23 +26,24 @@ class AddViewModel (
                 _state.value = _state.value.copy(author = event.author)
             }
             is AddEvent.IsbnChanged -> {
-                val isbn = event.isbn
-                    .replace("-", "")
-                    .replace(" ", "")
-                _state.value = _state.value.copy(isbn =
-                    isbn
-                )
+                val isbn = event.isbn.replace(Regex("\\D"), "")
+
+                _state.value = _state.value.copy(isbn = isbn)
                 //check if isbn is already in the database and if it is a valid isbn to show the complete button
-                if (isbn.length == 13 && isbn.isDigitsOnly()) {
+                if (isbn.length == 13 && isbn.isDigitsOnly() && isbn.startsWith("978")) {
                     viewModelScope.launch {
                         dao.checkForDoubleIsbn(isbn).collect { book ->
-                            _state.value = _state.value.copy(isDoubleIsbn = book != null)
+                            _state.value = _state.value.copy(
+                                isDoubleIsbn = book != null,
+                                showCompleteWithIsbn = true
+                            )
                         }
                     }
-                    _state.value = _state.value.copy(showCompleteWithIsbn = true)
                 } else {
-                    _state.value = _state.value.copy(isDoubleIsbn = false)
-                    _state.value = _state.value.copy(showCompleteWithIsbn = false)
+                    _state.value = _state.value.copy(
+                        isDoubleIsbn = false,
+                        showCompleteWithIsbn = false
+                    )
                 }
             }
             is AddEvent.PossessionStatusChanged -> {

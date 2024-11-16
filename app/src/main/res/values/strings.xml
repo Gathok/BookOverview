@@ -67,4 +67,6 @@
     <string name="restore_all_desc">Are you sure, you want to restore all books from trash?</string>
     <string name="not_editing_desc">Editing is not enabled.</string>
     <string name="auto_complete">Auto-complete</string>
+    <string name="not_owned">Not owned</string>
+    <string name="not_read">Not read</string>
 </resources>

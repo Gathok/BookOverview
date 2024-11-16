@@ -111,12 +111,14 @@ fun OverviewScreen(
         FilterDialog(
             onPositiveClick = {
                 showFilterDialog = false
-                onEvent(OverviewEvent.ChangeFilterList(
-                    state.possessionStatus,
-                    state.readStatus,
-                    state.sortType,
-                    state.searchType
-                ))
+                onEvent(
+                    OverviewEvent.ChangeFilterList(
+                        state.possessionStatus,
+                        state.readStatus,
+                        state.sortType,
+                        state.searchType
+                    )
+                )
             },
             onFilterChange = { index, value ->
                 when (index) {

@@ -1,11 +1,13 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 package de.gathok.bookoverview.details
 
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -76,15 +78,17 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
             onEvent(DetailsEvent.DescriptionChanged(state.book.description))
 
-            val bookResponse = BookModel.bookService.getBook(
-                isbn = "isbn:${state.book.isbn}"
-            )
-            try {
-                val imageUrl = bookResponse.items[0].volumeInfo.imageLinks.thumbnail
-                onEvent(DetailsEvent.SetCoverImage(imageUrl))
-                onEvent(DetailsEvent.SetOnlineDescription(bookResponse.items[0].volumeInfo.description))
-            } catch (e: Exception) {
-                // No cover image found
+            if (state.book.isbn.length == 13 && state.book.isbn.startsWith("978")) {
+                val bookResponse = BookModel.bookService.getBook(
+                    isbn = "isbn:${state.book.isbn}"
+                )
+                try {
+                    val imageUrl = bookResponse.items[0].volumeInfo.imageLinks.thumbnail
+                    onEvent(DetailsEvent.SetCoverImage(imageUrl))
+                    onEvent(DetailsEvent.SetOnlineDescription(bookResponse.items[0].volumeInfo.description))
+                } catch (e: Exception) {
+                    // No cover image found
+                }
             }
         }
     }
@@ -475,23 +479,37 @@ fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWid
 
     val context = LocalContext.current
     val text = stringResource(R.string.not_editing_desc)
+    val description = if (state.possessionStatus) {
+        stringResource(R.string.owned)
+    } else {
+        stringResource(R.string.not_owned)
+    }
 
     Icon(
         imageVector = customIconBook(),
         contentDescription = stringResource(R.string.owned),
         modifier = Modifier
             .fillMaxWidth(fillWidth)
-            .clickable {
-                if (state.isEditing) {
-                    onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
-                } else {
+            .combinedClickable (
+                onClick = {
+                    if (state.isEditing) {
+                        onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
+                    } else {
+                        Toast.makeText(
+                            context,
+                            text,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                onLongClick = {
                     Toast.makeText(
                         context,
-                        text,
+                        description,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-            },
+            ),
         tint = if (state.possessionStatus) {
             MaterialTheme.colorScheme.primary
         } else {
@@ -505,6 +523,11 @@ fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Fl
 
     val context = LocalContext.current
     val text = stringResource(R.string.not_editing_desc)
+    val description = if (state.readStatus) {
+        stringResource(R.string.read)
+    } else {
+        stringResource(R.string.not_read)
+    }
 
     Icon(
         imageVector = if (state.readStatus) {
@@ -515,17 +538,26 @@ fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Fl
         contentDescription = stringResource(R.string.read),
         modifier = Modifier
             .fillMaxWidth(fillWidth)
-            .clickable {
-                if (state.isEditing) {
-                    onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
-                } else {
+            .combinedClickable (
+                onClick = {
+                    if (state.isEditing) {
+                        onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
+                    } else {
+                        Toast.makeText(
+                            context,
+                            text,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                },
+                onLongClick = {
                     Toast.makeText(
                         context,
-                        text,
+                        description,
                         Toast.LENGTH_SHORT
                     ).show()
                 }
-            },
+            ),
         tint = if (state.readStatus) {
             MaterialTheme.colorScheme.primary
         } else {

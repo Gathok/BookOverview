@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -50,6 +51,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -66,6 +68,7 @@ import de.gathok.bookoverview.util.Screen
 fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent) -> Unit, pIsbnFromNav: String? = null) {
 
     var isbnFromNav by remember { mutableStateOf(pIsbnFromNav) }
+    var forceUpdate by remember { mutableStateOf(false) }
     // General error
     var showError by remember { mutableStateOf(false) }
     var errorTitleResource by remember { mutableIntStateOf(R.string.error) }
@@ -78,8 +81,9 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
 
     // LaunchedEffects
     // If an ISBN is passed from the scanner, fetch the book data
-    LaunchedEffect (key1 = isbnFromNav) {
+    LaunchedEffect (key1 = isbnFromNav, key2 = forceUpdate) {
         if (isbnFromNav != null) {
+            onEvent(AddEvent.IsbnChanged(isbnFromNav!!))
             val errorTriple = completeWithIsbn(
                 onEvent,
                 isbnFromNav!!,
@@ -91,6 +95,8 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
             errorTitleResource = errorTriple.first
             errorMessageResource = errorTriple.second
             showError = errorTriple.third
+        } else {
+            onEvent(AddEvent.IsbnChanged(""))
         }
     }
 
@@ -231,7 +237,8 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                             contentDescription = stringResource(R.string.auto_complete),
                             modifier = Modifier
                                 .clickable {
-                                    isbnFromNav = state.isbn
+                                    if (isbnFromNav == state.isbn) forceUpdate = !forceUpdate
+                                    else isbnFromNav = state.isbn
                                 }
                                 .padding(end = 8.dp)
                         )
@@ -250,7 +257,8 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                                 .padding(end = 8.dp)
                         )
                     }
-                }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
@@ -305,7 +313,6 @@ private suspend fun completeWithIsbn(
     var errorTitleResource = pErrorTitleResource
     var errorMessageResource = pErrorMessageResource
     var showError = pShowError
-    onEvent(AddEvent.IsbnChanged(isbnFromNav))
     val bookResponse = BookModel.bookService.getBook(
         isbn = "isbn:$isbnFromNav"
     )
