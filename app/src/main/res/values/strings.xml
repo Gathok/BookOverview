@@ -69,4 +69,6 @@
     <string name="auto_complete">Auto-complete</string>
     <string name="not_owned">Not owned</string>
     <string name="not_read">Not read</string>
+    <string name="book_series">Book series</string>
+    <string name="no_book_series">No book series assigned</string>
 </resources>

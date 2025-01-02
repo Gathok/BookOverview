@@ -7,6 +7,7 @@ sealed class AddEvent {
     data class PossessionStatusChanged(val possessionStatus: Boolean): AddEvent()
     data class ReadStatusChanged(val readStatus: Boolean): AddEvent()
     data class RatingChanged(val rating: Int): AddEvent()
+    data class BookSeriesTitleChanged(val bookSeriesTitle: String): AddEvent()
 
     object AddBook: AddEvent()
     object ClearFields: AddEvent()

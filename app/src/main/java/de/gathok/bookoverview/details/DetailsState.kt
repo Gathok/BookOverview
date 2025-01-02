@@ -20,6 +20,12 @@ data class DetailsState(
     val ratingChanged: Boolean = false,
     val description: String = "",
     val descriptionChanged: Boolean = false,
+    val bookSeriesTitle: String = "",
+    val bookSeriesTitleChanged: Boolean = false,
+
+    val somethingChanged: Boolean = false,
+
+    val bookSeriesListMap: Map<String, Int> = emptyMap(),
 
     val isEditing: Boolean = false,
     val isDoubleIsbn: Boolean = false,

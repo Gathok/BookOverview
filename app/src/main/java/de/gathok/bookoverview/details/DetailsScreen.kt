@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.gathok.bookoverview.R
+import de.gathok.bookoverview.add.BookSeriesDropDown
 import de.gathok.bookoverview.add.RatingBar
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.ui.customIconBook
@@ -77,6 +78,9 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             onEvent(DetailsEvent.ReadStatusChanged(state.book.readStatus))
             onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
             onEvent(DetailsEvent.DescriptionChanged(state.book.description))
+            onEvent(DetailsEvent.BookSeriesTitleChanged(state.bookSeriesListMap.entries.find {
+                it.value == state.book.bookSeriesId
+            }?.key ?: ""))
 
             if (state.book.isbn.length == 13 && state.book.isbn.startsWith("978")) {
                 val bookResponse = BookModel.bookService.getBook(
@@ -97,11 +101,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
     var showNoTitleDialog by remember { mutableStateOf(false) }
 
     fun onDismiss() {
-        if (state.isEditing &&
-            (state.titleChanged || state.authorChanged || state.isbnChanged ||
-                    state.possessionStatusChanged || state.readStatusChanged || state.ratingChanged
-                    || state.descriptionChanged)
-        ) {
+        if (state.isEditing && state.somethingChanged) {
             showConfirmLeaveDialog = true
         } else {
             navController.popBackStack()
@@ -145,10 +145,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             if (state.title.isBlank()) {
                                 showNoTitleDialog = true
                             } else {
-                                if (state.titleChanged || state.authorChanged || state.isbnChanged ||
-                                        state.possessionStatusChanged || state.readStatusChanged||
-                                        state.ratingChanged || state.descriptionChanged
-                                ) {
+                                if (state.somethingChanged) {
                                     onEvent(DetailsEvent.UpdateBook)
                                 }
                                 onEvent(DetailsEvent.SwitchEditing)
@@ -230,6 +227,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     EditType.AUTHOR -> state.author
                     EditType.ISBN -> state.isbn
                     EditType.DESCRIPTION -> state.description
+                    EditType.BOOK_SERIES -> state.bookSeriesTitle
                 }
             }
 
@@ -241,18 +239,29 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     ))
                 },
                 text = {
-                    OutlinedTextField(
-                        value = tempValue,
-                        onValueChange = { tempValue = it },
-                        label = {
-                            Text(
-                                text = stringResource(
-                                    id = R.string.new_label,
-                                    stringResource(curEditType.getTitleStringId)),
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    if (curEditType == EditType.BOOK_SERIES) {
+                        BookSeriesDropDown(
+                            selectedOption = tempValue,
+                            options = state.bookSeriesListMap.keys.toList(),
+                            label = stringResource(R.string.book_series),
+                            onValueChanged = { tempValue = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        )
+                    } else {
+                        OutlinedTextField(
+                            value = tempValue,
+                            onValueChange = { tempValue = it },
+                            label = {
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.new_label,
+                                        stringResource(curEditType.getTitleStringId)),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
                 },
                 onDismissRequest = { showEditDialog = false },
                 confirmButton = {
@@ -263,6 +272,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                                 EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempValue))
                                 EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempValue))
                                 EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempValue))
+                                EditType.BOOK_SERIES -> onEvent(DetailsEvent.BookSeriesTitleChanged(tempValue))
                             }
                             showEditDialog = false
                         }
@@ -432,6 +442,37 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)),
             )
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
+                    .clickable {
+                        if (state.isEditing) {
+                            curEditType = EditType.BOOK_SERIES
+                            showEditDialog = true
+                        }
+                    },
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.book_series),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (state.bookSeriesTitleChanged) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                    )
+                    Text(
+                        text = state.bookSeriesTitle.ifBlank {
+                                stringResource(R.string.no_book_series)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
             Row (
                 modifier = Modifier
                     .fillMaxWidth()

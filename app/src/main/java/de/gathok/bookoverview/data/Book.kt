@@ -16,7 +16,8 @@ data class Book(
     var description: String = "",
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    var deletedSince: Long = 0
+    var deletedSince: Long = 0,
+    var bookSeriesId: Int? = null,
 ) {
 
     fun getRatingString(): String {

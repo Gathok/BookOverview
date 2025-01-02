@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,11 +30,15 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -48,7 +51,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -184,7 +186,6 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
             modifier = Modifier
                 .padding(12.dp, pad.calculateTopPadding(), 12.dp, 12.dp)
                 .verticalScroll(scrollState)
-                .clip(shape = RoundedCornerShape(10.dp))
         ) {
             OutlinedTextField(
                 value = state.title,
@@ -298,6 +299,19 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
+            Row (
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BookSeriesDropDown(
+                    selectedOption = state.bookSeriesTitle,
+                    options = state.bookSeriesTitleList,
+                    label = stringResource(R.string.book_series),
+                    onValueChanged = { onEvent(AddEvent.BookSeriesTitleChanged(it)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
         }
     }
 }
@@ -398,6 +412,71 @@ fun RatingBar(
                         else -> "${stringResource(R.string.rating)}: $current★"
                     } + if (changed) "*" else "",
                     modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookSeriesDropDown(
+    selectedOption: String,
+    options: List<String>,
+    label: String,
+    onValueChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var currentInput by remember { mutableStateOf(selectedOption) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = {
+            expanded = !expanded
+            if (expanded)
+                currentInput = ""
+        },
+        modifier = modifier
+    ) {
+        OutlinedTextField(
+            readOnly = !expanded,
+            value = if (expanded) currentInput else selectedOption,
+            onValueChange = {
+                currentInput = it
+                onValueChanged(it)
+            },
+            label = { Text(text = label) },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = OutlinedTextFieldDefaults.colors(),
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            singleLine = true,
+        )
+
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { option: String ->
+                if (option.contains(currentInput, ignoreCase = true)) {
+                    DropdownMenuItem(
+                        text = { Text(text = option) },
+                        onClick = {
+                            expanded = false
+                            currentInput = option
+                            onValueChanged(option)
+                        }
+                    )
+                }
+            }
+            if (currentInput.isNotBlank() && !options.contains(currentInput)) {
+                DropdownMenuItem(
+                    text = { Text(text = currentInput) },
+                    onClick = {
+                        expanded = false
+                        onValueChanged(currentInput)
+                    }
                 )
             }
         }

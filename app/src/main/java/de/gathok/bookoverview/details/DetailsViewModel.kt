@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookDao
+import de.gathok.bookoverview.data.BookSeries
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,24 +22,43 @@ class DetailsViewModel (
 
     private val _bookId = MutableStateFlow(0)
 
+    private val _bookSeriesList = dao.getAllBookSeries()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     private val _book = _bookId
         .flatMapLatest { bookId ->
             dao.getBookById(bookId)
         }
 
     private val _state = MutableStateFlow(DetailsState())
-    val state = combine(_book, _state) { book, state ->
+    val state = combine(_book, _state, _bookSeriesList) { book, state, bookSeriesList ->
+        val titleChanged = state.title != book?.title
+        val authorChanged = state.author != book?.author
+        val isbnChanged = state.isbn != book?.isbn
+        val descriptionChanged = state.description != book?.description
+        val possessionStatusChanged = state.possessionStatus != book?.possessionStatus
+        val readStatusChanged = state.readStatus != book?.readStatus
+        val ratingChanged = !((state.rating == book?.rating) ||
+                (state.rating == 0 && book?.rating == null))
+        val bookSeriesTitleChanged = (book?.bookSeriesId == null && state.bookSeriesTitle.isBlank()).xor(
+            state.bookSeriesTitle.trim() != book?.bookSeriesId?.let { bookSeriesId ->
+                bookSeriesList.find { it.id == bookSeriesId }?.title ?: "" }
+        )
+
         state.copy(
             bookId = book?.id ?: 0,
             book = book,
-            titleChanged = state.title != book?.title,
-            authorChanged = state.author != book?.author,
-            isbnChanged = state.isbn != book?.isbn,
-            descriptionChanged = state.description != book?.description,
-            possessionStatusChanged = state.possessionStatus != book?.possessionStatus,
-            readStatusChanged = state.readStatus != book?.readStatus,
-            ratingChanged = !((state.rating == book?.rating) ||
-                    (state.rating == 0 && book?.rating == null)),
+            titleChanged = titleChanged,
+            authorChanged = authorChanged,
+            isbnChanged = isbnChanged,
+            descriptionChanged = descriptionChanged,
+            possessionStatusChanged = possessionStatusChanged,
+            readStatusChanged = readStatusChanged,
+            ratingChanged = ratingChanged,
+            bookSeriesTitleChanged = bookSeriesTitleChanged,
+            somethingChanged = titleChanged || authorChanged || isbnChanged || descriptionChanged ||
+                    possessionStatusChanged || readStatusChanged || ratingChanged || bookSeriesTitleChanged,
+            bookSeriesListMap = bookSeriesList.associateBy({ it.title }, { it.id }),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DetailsState())
 
@@ -84,6 +104,10 @@ class DetailsViewModel (
                 _state.value = _state.value.copy(description = event.description)
             }
 
+            is DetailsEvent.BookSeriesTitleChanged -> {
+                _state.value = _state.value.copy(bookSeriesTitle = event.bookSeriesTitle)
+            }
+
             is DetailsEvent.SetCoverImage -> {
                 _state.value = _state.value.copy(coverImage = event.coverImage)
             }
@@ -97,21 +121,36 @@ class DetailsViewModel (
             }
 
             DetailsEvent.UpdateBook -> {
-                val book = Book(
-                    id = _bookId.value,
-                    title = _state.value.title,
-                    author = _state.value.author,
-                    isbn = _state.value.isbn,
-                    possessionStatus = _state.value.possessionStatus,
-                    readStatus = _state.value.readStatus,
-                    rating = when (_state.value.rating) {
-                        0 -> null
-                        else -> _state.value.rating
-                    },
-                    description = _state.value.description
-                )
+                var bookSeriesId: Int? = null
+                if (state.value.bookSeriesListMap.keys.contains(_state.value.bookSeriesTitle)) {
+                    bookSeriesId = state.value.bookSeriesListMap[_state.value.bookSeriesTitle]
+                } else if (_state.value.bookSeriesTitle.isNotBlank()) {
+                    val bookSeries = BookSeries(title = _state.value.bookSeriesTitle)
+                    viewModelScope.launch {
+                        dao.upsertBookSeries(bookSeries)
+                    }
+                }
 
                 viewModelScope.launch {
+                    if (bookSeriesId == null) {
+                        dao.getAllBookSeries().collect { bookSeriesList ->
+                            bookSeriesId = bookSeriesList.find { it.title == _state.value.bookSeriesTitle }?.id
+                        }
+                    }
+                    val book = Book(
+                        id = _bookId.value,
+                        title = _state.value.title,
+                        author = _state.value.author,
+                        isbn = _state.value.isbn,
+                        possessionStatus = _state.value.possessionStatus,
+                        readStatus = _state.value.readStatus,
+                        rating = when (_state.value.rating) {
+                            0 -> null
+                            else -> _state.value.rating
+                        },
+                        description = _state.value.description,
+                        bookSeriesId = bookSeriesId
+                    )
                     dao.upsertBook(book)
                 }
             }

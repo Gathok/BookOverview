@@ -11,4 +11,7 @@ data class AddState(
     val isScanning: Boolean = false,
     val isDoubleIsbn: Boolean = false,
     val showCompleteWithIsbn: Boolean = false,
+    val bookSeriesId: Int? = null,
+    val bookSeriesTitle: String = "",
+    val bookSeriesTitleList: List<String> = emptyList(),
 )

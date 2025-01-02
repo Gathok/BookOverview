@@ -67,4 +67,6 @@
     <string name="auto_complete">Automatisch vervollständigen</string>
     <string name="not_owned">Nicht im Besitz</string>
     <string name="not_read">Nicht gelesen</string>
+    <string name="book_series">Buch Serie</string>
+    <string name="no_book_series">Keine Buch Serie hinterlegt</string>
 </resources>

@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookDao
+import de.gathok.bookoverview.data.BookSeries
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -14,8 +16,15 @@ class AddViewModel (
     private val dao: BookDao
 ): ViewModel() {
 
+    private val _bookSeriesList = dao.getAllBookSeries()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     private val _state = MutableStateFlow(AddState())
-    val state = _state.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AddState())
+
+    val state = combine(_state, _bookSeriesList) { state, bookSeriesList ->
+        state.copy(
+            bookSeriesTitleList = bookSeriesList.map { it.title }
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AddState())
 
     fun onEvent(event: AddEvent) {
         when(event) {
@@ -57,14 +66,24 @@ class AddViewModel (
             }
             is AddEvent.AddBook -> {
                 val title = _state.value.title.trim()
+                if (title.isBlank()) return
+
                 val author = _state.value.author.trim()
                 val isbn = _state.value.isbn.trim()
                 val possessionStatus = _state.value.possessionStatus
                 val readStatus = _state.value.readStatus
                 val rating = _state.value.rating
+                val bookSeriesTitle = _state.value.bookSeriesTitle.trim()
 
-                if (title.isBlank()) {
-                    return
+                val bookSeries = if (bookSeriesTitle.isNotBlank()) {
+                    _bookSeriesList.value.find { it.title == bookSeriesTitle }
+                        ?: BookSeries(title = bookSeriesTitle)
+                } else null
+
+                viewModelScope.launch {
+                    if (bookSeries != null) {
+                        dao.upsertBookSeries(bookSeries)
+                    }
                 }
 
                 val book = Book(
@@ -73,7 +92,8 @@ class AddViewModel (
                     isbn = isbn,
                     possessionStatus = possessionStatus,
                     readStatus = readStatus,
-                    rating = rating
+                    rating = rating,
+                    bookSeriesId = bookSeries?.id
                 )
 
                 viewModelScope.launch {
@@ -82,8 +102,11 @@ class AddViewModel (
 
                 _state.value = AddState()
             }
-            AddEvent.ClearFields -> {
+            is AddEvent.ClearFields -> {
                 _state.value = AddState()
+            }
+            is AddEvent.BookSeriesTitleChanged -> {
+                _state.value = _state.value.copy(bookSeriesTitle = event.bookSeriesTitle)
             }
         }
     }

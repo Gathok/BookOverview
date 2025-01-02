@@ -10,6 +10,7 @@ sealed class DetailsEvent {
     data class ReadStatusChanged(val readStatus: Boolean): DetailsEvent()
     data class RatingChanged(val rating: Int): DetailsEvent()
     data class DescriptionChanged(val description: String): DetailsEvent()
+    data class BookSeriesTitleChanged(val bookSeriesTitle: String): DetailsEvent()
 
     data class SetCoverImage(val coverImage: String): DetailsEvent()
     data class SetOnlineDescription(val onlineDescription: String): DetailsEvent()
