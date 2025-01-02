@@ -44,6 +44,7 @@ class DetailsViewModel (
             state.bookSeriesTitle.trim() != book?.bookSeriesId?.let { bookSeriesId ->
                 bookSeriesList.find { it.id == bookSeriesId }?.title ?: "" }
         )
+        val readingTimeChanged = state.readingTime != book?.readingTime
 
         state.copy(
             bookId = book?.id ?: 0,
@@ -56,8 +57,10 @@ class DetailsViewModel (
             readStatusChanged = readStatusChanged,
             ratingChanged = ratingChanged,
             bookSeriesTitleChanged = bookSeriesTitleChanged,
+            readingTimeChanged = readingTimeChanged,
             somethingChanged = titleChanged || authorChanged || isbnChanged || descriptionChanged ||
-                    possessionStatusChanged || readStatusChanged || ratingChanged || bookSeriesTitleChanged,
+                    possessionStatusChanged || readStatusChanged || ratingChanged || bookSeriesTitleChanged
+                    || readingTimeChanged,
             bookSeriesListMap = bookSeriesList.associateBy({ it.title }, { it.id }),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DetailsState())
@@ -108,6 +111,10 @@ class DetailsViewModel (
                 _state.value = _state.value.copy(bookSeriesTitle = event.bookSeriesTitle)
             }
 
+            is DetailsEvent.ReadingTimeChanged -> {
+                _state.value = _state.value.copy(readingTime = event.readingTime)
+            }
+
             is DetailsEvent.SetCoverImage -> {
                 _state.value = _state.value.copy(coverImage = event.coverImage)
             }
@@ -131,32 +138,52 @@ class DetailsViewModel (
                     }
                 }
 
+//                if (bookSeriesId == null) {
+//                    dao.getAllBookSeries().collect { bookSeriesList ->
+//                        bookSeriesId = bookSeriesList.find { it.title == _state.value.bookSeriesTitle }?.id
+//                    }
+//                }
+                val book = Book(
+                    id = _bookId.value,
+                    title = _state.value.title,
+                    author = _state.value.author,
+                    isbn = _state.value.isbn,
+                    possessionStatus = _state.value.possessionStatus,
+                    readStatus = _state.value.readStatus,
+                    rating = when (_state.value.rating) {
+                        0 -> null
+                        else -> _state.value.rating
+                    },
+                    description = _state.value.description,
+                    bookSeriesId = bookSeriesId,
+                    readingTime = _state.value.readingTime
+                )
                 viewModelScope.launch {
-                    if (bookSeriesId == null) {
-                        dao.getAllBookSeries().collect { bookSeriesList ->
-                            bookSeriesId = bookSeriesList.find { it.title == _state.value.bookSeriesTitle }?.id
-                        }
-                    }
-                    val book = Book(
-                        id = _bookId.value,
-                        title = _state.value.title,
-                        author = _state.value.author,
-                        isbn = _state.value.isbn,
-                        possessionStatus = _state.value.possessionStatus,
-                        readStatus = _state.value.readStatus,
-                        rating = when (_state.value.rating) {
-                            0 -> null
-                            else -> _state.value.rating
-                        },
-                        description = _state.value.description,
-                        bookSeriesId = bookSeriesId
-                    )
                     dao.upsertBook(book)
                 }
             }
 
             DetailsEvent.ResetState -> {
                 _state.value = DetailsState()
+            }
+
+            is DetailsEvent.ChangeBook -> {
+                _state.value = _state.value.copy(
+                    title = event.book.title,
+                    author = event.book.author,
+                    isbn = event.book.isbn,
+                    possessionStatus = event.book.possessionStatus,
+                    readStatus = event.book.readStatus,
+                    rating = event.book.rating ?: 0,
+                    description = event.book.description,
+                    bookSeriesTitle = event.book.bookSeriesId?.let { bookSeriesId ->
+                        state.value.bookSeriesListMap.entries.find { it.value == bookSeriesId }?.key ?: ""
+                    } ?: "",
+                    readingTime = event.book.readingTime,
+                    coverImage = "",
+                    onlineDescription = "",
+                    isEditing = false
+                )
             }
         }
     }

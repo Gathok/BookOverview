@@ -1,5 +1,5 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class
+    ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class
 )
 
 package de.gathok.bookoverview.overview
@@ -84,10 +84,9 @@ import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.customIconBook
-import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
 import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.ui.customIconFilterList
-import de.gathok.bookoverview.ui.customIconSelectCheckBox
+import de.gathok.bookoverview.ui.customIconRead
 import de.gathok.bookoverview.util.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -390,7 +389,7 @@ fun BookItem(book: Book) {
                 tint = if (book.possessionStatus) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
             )
             Icon(
-                imageVector = if (book.readStatus) customIconSelectCheckBox() else customIconCheckBoxOutlineBlank(),
+                imageVector = customIconRead(),
                 contentDescription = stringResource(id = R.string.read),
                 modifier = Modifier.size(24.dp),
                 tint = if (book.readStatus) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)

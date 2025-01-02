@@ -25,9 +25,13 @@ import de.gathok.bookoverview.data.BookDatabase
 import de.gathok.bookoverview.data.MIGRATION_1_2
 import de.gathok.bookoverview.data.MIGRATION_1_3
 import de.gathok.bookoverview.data.MIGRATION_1_4
+import de.gathok.bookoverview.data.MIGRATION_1_5
 import de.gathok.bookoverview.data.MIGRATION_2_3
 import de.gathok.bookoverview.data.MIGRATION_2_4
+import de.gathok.bookoverview.data.MIGRATION_2_5
 import de.gathok.bookoverview.data.MIGRATION_3_4
+import de.gathok.bookoverview.data.MIGRATION_3_5
+import de.gathok.bookoverview.data.MIGRATION_4_5
 import de.gathok.bookoverview.details.DetailsEvent
 import de.gathok.bookoverview.details.DetailsScreen
 import de.gathok.bookoverview.details.DetailsState
@@ -58,6 +62,10 @@ class MainActivity : ComponentActivity() {
             .addMigrations(MIGRATION_1_4)
             .addMigrations(MIGRATION_2_4)
             .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_1_5)
+            .addMigrations(MIGRATION_2_5)
+            .addMigrations(MIGRATION_3_5)
+            .addMigrations(MIGRATION_4_5)
             .build()
     }
     private val overviewViewModel by viewModels<OverviewViewModel>(

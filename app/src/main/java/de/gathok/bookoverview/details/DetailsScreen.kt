@@ -17,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
@@ -42,8 +44,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
@@ -51,20 +55,28 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.add.BookSeriesDropDown
 import de.gathok.bookoverview.add.RatingBar
 import de.gathok.bookoverview.api.BookModel
+import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.customIconBook
-import de.gathok.bookoverview.ui.customIconCheckBoxOutlineBlank
-import de.gathok.bookoverview.ui.customIconSelectCheckBox
+import de.gathok.bookoverview.ui.customIconRead
+import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 
 
 @Composable
 fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
-                  bookId: Int?) {
+                  bookId: Int?, testBook: Book? = null) {
+
+    LaunchedEffect(key1 = testBook) {
+        if (testBook != null) {
+            onEvent(DetailsEvent.ResetState)
+            onEvent(DetailsEvent.ChangeBook(testBook))
+        }
+    }
 
     LaunchedEffect (key1 = bookId) {
         onEvent(DetailsEvent.ResetState)
         if (bookId != null) {
             onEvent(DetailsEvent.ChangeBookId(bookId))
-        } else {
+        } else if (testBook == null) {
             navController.popBackStack()
         }
     }
@@ -81,6 +93,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             onEvent(DetailsEvent.BookSeriesTitleChanged(state.bookSeriesListMap.entries.find {
                 it.value == state.book.bookSeriesId
             }?.key ?: ""))
+            onEvent(DetailsEvent.ReadingTimeChanged(state.book.readingTime))
 
             if (state.book.isbn.length == 13 && state.book.isbn.startsWith("978")) {
                 val bookResponse = BookModel.bookService.getBook(
@@ -228,6 +241,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     EditType.ISBN -> state.isbn
                     EditType.DESCRIPTION -> state.description
                     EditType.BOOK_SERIES -> state.bookSeriesTitle
+                    EditType.READING_TIME -> ""
                 }
             }
 
@@ -239,28 +253,47 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     ))
                 },
                 text = {
-                    if (curEditType == EditType.BOOK_SERIES) {
-                        BookSeriesDropDown(
-                            selectedOption = tempValue,
-                            options = state.bookSeriesListMap.keys.toList(),
-                            label = stringResource(R.string.book_series),
-                            onValueChanged = { tempValue = it },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-                    } else {
-                        OutlinedTextField(
-                            value = tempValue,
-                            onValueChange = { tempValue = it },
-                            label = {
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.new_label,
-                                        stringResource(curEditType.getTitleStringId)),
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
+                    when (curEditType) {
+                        EditType.BOOK_SERIES -> {
+                            BookSeriesDropDown(
+                                selectedOption = tempValue,
+                                options = state.bookSeriesListMap.keys.toList(),
+                                label = stringResource(R.string.book_series),
+                                onValueChanged = { tempValue = it },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                            )
+                        }
+                        EditType.READING_TIME -> {
+                            OutlinedTextField(
+                                value = tempValue,
+                                onValueChange = { tempValue = it },
+                                label = {
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.add_minutes,
+                                            stringResource(curEditType.getTitleStringId),
+                                        ),
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            )
+                        }
+                        else -> {
+                            OutlinedTextField(
+                                value = tempValue,
+                                onValueChange = { tempValue = it },
+                                label = {
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.new_label,
+                                            stringResource(curEditType.getTitleStringId)),
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
                 },
                 onDismissRequest = { showEditDialog = false },
@@ -273,6 +306,9 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                                 EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempValue))
                                 EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempValue))
                                 EditType.BOOK_SERIES -> onEvent(DetailsEvent.BookSeriesTitleChanged(tempValue))
+                                EditType.READING_TIME -> onEvent(DetailsEvent.ReadingTimeChanged(
+                                    (tempValue.toIntOrNull() ?: 0) + (state.readingTime ?: 0)
+                                ))
                             }
                             showEditDialog = false
                         }
@@ -448,6 +484,40 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
                     .clickable {
                         if (state.isEditing) {
+                            curEditType = EditType.READING_TIME
+                            showEditDialog = true
+                        }
+                    },
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.reading_time),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = if (state.readingTimeChanged) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                    )
+                    Text(
+                        text = if (state.readingTime != null) {
+                            formatReadingTime(state.readingTime) + " " + stringResource(R.string.hours)
+                        } else {
+                            stringResource(R.string.no_reading_time)
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+            /* FIX BOOK SERIES
+            Row (
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
+                    .clickable {
+                        if (state.isEditing) {
                             curEditType = EditType.BOOK_SERIES
                             showEditDialog = true
                         }
@@ -472,7 +542,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-            }
+            }*/
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -531,24 +601,28 @@ fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWid
         contentDescription = stringResource(R.string.owned),
         modifier = Modifier
             .fillMaxWidth(fillWidth)
-            .combinedClickable (
+            .combinedClickable(
                 onClick = {
                     if (state.isEditing) {
                         onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
                     } else {
-                        Toast.makeText(
-                            context,
-                            text,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast
+                            .makeText(
+                                context,
+                                text,
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
                     }
                 },
                 onLongClick = {
-                    Toast.makeText(
-                        context,
-                        description,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            description,
+                            Toast.LENGTH_SHORT
+                        )
+                        .show()
                 }
             ),
         tint = if (state.possessionStatus) {
@@ -571,38 +645,79 @@ fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Fl
     }
 
     Icon(
-        imageVector = if (state.readStatus) {
-            customIconSelectCheckBox()
-        } else {
-            customIconCheckBoxOutlineBlank()
-        },
+        imageVector = customIconRead(),
         contentDescription = stringResource(R.string.read),
         modifier = Modifier
             .fillMaxWidth(fillWidth)
-            .combinedClickable (
+            .combinedClickable(
                 onClick = {
                     if (state.isEditing) {
                         onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
                     } else {
-                        Toast.makeText(
-                            context,
-                            text,
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        Toast
+                            .makeText(
+                                context,
+                                text,
+                                Toast.LENGTH_SHORT
+                            )
+                            .show()
                     }
                 },
                 onLongClick = {
-                    Toast.makeText(
-                        context,
-                        description,
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast
+                        .makeText(
+                            context,
+                            description,
+                            Toast.LENGTH_SHORT
+                        )
+                        .show()
                 }
-            ),
+            )
+            .padding(top = 6.dp, bottom = 6.dp),
         tint = if (state.readStatus) {
             MaterialTheme.colorScheme.primary
         } else {
             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
         },
     )
+}
+
+fun formatReadingTime(readingTime: Int?): String {
+    if (readingTime == null) {
+        return ""
+    }
+    val minutes: Int = readingTime % 60
+    val hours: Int = (readingTime - minutes) / 60
+    return if (minutes < 10) {
+        "$hours:0$minutes"
+    } else {
+        "$hours:$minutes"
+    }
+}
+
+
+@Preview
+@Composable
+private fun PreviewDetailsScreen() {
+    BookOverviewTheme (
+        darkTheme = true
+    ) {
+        DetailsScreen(
+            navController = NavController(LocalContext.current),
+            state = DetailsState(),
+            onEvent = {},
+            bookId = null,
+            testBook = Book(
+                title = "Test Title",
+                author = "Test Author",
+                isbn = "1234567890123",
+                possessionStatus = true,
+                readStatus = false,
+                rating = 3,
+                description = "Test Description",
+                id = 1,
+                bookSeriesId = 1
+            )
+        )
+    }
 }

@@ -23,6 +23,9 @@ data class DetailsState(
     val bookSeriesTitle: String = "",
     val bookSeriesTitleChanged: Boolean = false,
 
+    val readingTime: Int? = null,
+    val readingTimeChanged: Boolean = false,
+
     val somethingChanged: Boolean = false,
 
     val bookSeriesListMap: Map<String, Int> = emptyMap(),

@@ -10,7 +10,8 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
-
+import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun customIconFlashlightOff(): ImageVector {
@@ -618,98 +619,93 @@ fun customIconDelete(): ImageVector {
 }
 
 @Composable
-fun customIconSelectCheckBox(): ImageVector {
+fun customIconRead(): ImageVector {
     return remember {
         ImageVector.Builder(
-            name = "select_check_box",
-            defaultWidth = 40.0.dp,
-            defaultHeight = 40.0.dp,
-            viewportWidth = 40.0f,
-            viewportHeight = 40.0f
+            name = "Glasses",
+            defaultWidth = 24.dp,
+            defaultHeight = 24.dp,
+            viewportWidth = 24f,
+            viewportHeight = 24f
         ).apply {
             path(
-                fill = SolidColor(Color.Black),
-                fillAlpha = 1f,
-                stroke = null,
-                strokeAlpha = 1f,
-                strokeLineWidth = 1.0f,
-                strokeLineCap = StrokeCap.Butt,
-                strokeLineJoin = StrokeJoin.Miter,
-                strokeLineMiter = 1f,
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF000000)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
                 pathFillType = PathFillType.NonZero
             ) {
-                moveTo(19.208f, 28f)
-                lineTo(10f, 18.792f)
-                lineToRelative(1.833f, -1.834f)
-                lineToRelative(7.375f, 7.375f)
-                lineToRelative(15.75f, -15.75f)
-                lineToRelative(1.834f, 1.875f)
-                close()
-                moveTo(7.875f, 34.75f)
-                quadToRelative(-1.083f, 0f, -1.854f, -0.771f)
-                quadToRelative(-0.771f, -0.771f, -0.771f, -1.854f)
-                verticalLineTo(7.875f)
-                quadToRelative(0f, -1.083f, 0.771f, -1.854f)
-                quadToRelative(0.771f, -0.771f, 1.854f, -0.771f)
-                horizontalLineToRelative(24.25f)
-                quadToRelative(0.542f, 0f, 1.042f, 0.25f)
-                reflectiveQuadToRelative(0.791f, 0.542f)
-                lineTo(32f, 8f)
-                verticalLineToRelative(-0.125f)
-                horizontalLineTo(7.875f)
-                verticalLineToRelative(24.25f)
-                horizontalLineToRelative(24.25f)
-                verticalLineToRelative(-13.5f)
-                lineToRelative(2.625f, -2.667f)
-                verticalLineToRelative(16.167f)
-                quadToRelative(0f, 1.083f, -0.771f, 1.854f)
-                quadToRelative(-0.771f, 0.771f, -1.854f, 0.771f)
+                moveTo(10f, 15f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 6f, 19f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 2f, 15f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 10f, 15f)
                 close()
             }
-        }.build()
-    }
-}
-
-@Composable
-fun customIconCheckBoxOutlineBlank(): ImageVector {
-    return remember {
-        ImageVector.Builder(
-            name = "check_box_outline_blank",
-            defaultWidth = 40.0.dp,
-            defaultHeight = 40.0.dp,
-            viewportWidth = 40.0f,
-            viewportHeight = 40.0f
-        ).apply {
             path(
-                fill = SolidColor(Color.Black),
-                fillAlpha = 1f,
-                stroke = null,
-                strokeAlpha = 1f,
-                strokeLineWidth = 1.0f,
-                strokeLineCap = StrokeCap.Butt,
-                strokeLineJoin = StrokeJoin.Miter,
-                strokeLineMiter = 1f,
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF000000)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
                 pathFillType = PathFillType.NonZero
             ) {
-                moveTo(7.875f, 34.75f)
-                quadToRelative(-1.042f, 0f, -1.833f, -0.792f)
-                quadToRelative(-0.792f, -0.791f, -0.792f, -1.833f)
-                verticalLineTo(7.875f)
-                quadToRelative(0f, -1.042f, 0.792f, -1.833f)
-                quadToRelative(0.791f, -0.792f, 1.833f, -0.792f)
-                horizontalLineToRelative(24.25f)
-                quadToRelative(1.042f, 0f, 1.833f, 0.792f)
-                quadToRelative(0.792f, 0.791f, 0.792f, 1.833f)
-                verticalLineToRelative(24.25f)
-                quadToRelative(0f, 1.042f, -0.792f, 1.833f)
-                quadToRelative(-0.791f, 0.792f, -1.833f, 0.792f)
+                moveTo(22f, 15f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 18f, 19f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 14f, 15f)
+                arcTo(4f, 4f, 0f, isMoreThanHalf = false, isPositiveArc = true, 22f, 15f)
                 close()
-                moveToRelative(0f, -2.625f)
-                horizontalLineToRelative(24.25f)
-                verticalLineTo(7.875f)
-                horizontalLineTo(7.875f)
-                verticalLineToRelative(24.25f)
-                close()
+            }
+            path(
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF000000)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(14f, 15f)
+                arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, -2f, -2f)
+                arcToRelative(2f, 2f, 0f, isMoreThanHalf = false, isPositiveArc = false, -2f, 2f)
+            }
+            path(
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF000000)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(2.5f, 13f)
+                lineTo(5f, 7f)
+                curveToRelative(0.7f, -1.3f, 1.4f, -2f, 3f, -2f)
+            }
+            path(
+                fill = null,
+                fillAlpha = 1.0f,
+                stroke = SolidColor(Color(0xFF000000)),
+                strokeAlpha = 1.0f,
+                strokeLineWidth = 2f,
+                strokeLineCap = StrokeCap.Round,
+                strokeLineJoin = StrokeJoin.Round,
+                strokeLineMiter = 1.0f,
+                pathFillType = PathFillType.NonZero
+            ) {
+                moveTo(21.5f, 13f)
+                lineTo(19f, 7f)
+                curveToRelative(-0.7f, -1.3f, -1.5f, -2f, -3f, -2f)
             }
         }.build()
     }

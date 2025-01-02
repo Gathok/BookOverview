@@ -1,5 +1,7 @@
 package de.gathok.bookoverview.details
 
+import de.gathok.bookoverview.data.Book
+
 sealed class DetailsEvent {
     data class ChangeBookId(val bookId: Int): DetailsEvent()
 
@@ -11,6 +13,7 @@ sealed class DetailsEvent {
     data class RatingChanged(val rating: Int): DetailsEvent()
     data class DescriptionChanged(val description: String): DetailsEvent()
     data class BookSeriesTitleChanged(val bookSeriesTitle: String): DetailsEvent()
+    data class ReadingTimeChanged(val readingTime: Int?): DetailsEvent()
 
     data class SetCoverImage(val coverImage: String): DetailsEvent()
     data class SetOnlineDescription(val onlineDescription: String): DetailsEvent()
@@ -19,4 +22,6 @@ sealed class DetailsEvent {
 
     data object UpdateBook: DetailsEvent()
     data object ResetState: DetailsEvent()
+
+    data class ChangeBook(val book: Book): DetailsEvent()
 }

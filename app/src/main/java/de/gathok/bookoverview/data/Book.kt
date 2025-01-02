@@ -18,6 +18,7 @@ data class Book(
     val id: Int = 0,
     var deletedSince: Long = 0,
     var bookSeriesId: Int? = null,
+    var readingTime: Int? = null,
 ) {
 
     fun getRatingString(): String {

@@ -71,4 +71,8 @@
     <string name="not_read">Not read</string>
     <string name="book_series">Book series</string>
     <string name="no_book_series">No book series assigned</string>
+    <string name="reading_time">Reading time</string>
+    <string name="no_reading_time">No reading time tracked</string>
+    <string name="hours">hours</string>
+    <string name="add_minutes">Add minutes</string>
 </resources>

@@ -7,7 +7,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Book::class, BookSeries::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class BookDatabase: RoomDatabase() {
@@ -60,3 +60,39 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         database.execSQL("ALTER TABLE book ADD COLUMN bookSeriesId INTEGER")
     }
 }
+
+// Migrations to version 5
+val MIGRATION_1_5 = object : Migration(1, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE book ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        database.execSQL("ALTER TABLE book ADD COLUMN deletedSince INTEGER NOT NULL DEFAULT 0")
+        database.execSQL("CREATE TABLE bookseries (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '')")
+        database.execSQL("ALTER TABLE book ADD COLUMN bookSeriesId INTEGER")
+        database.execSQL("ALTER TABLE book ADD COLUMN readingTime INTEGER")
+    }
+}
+
+val MIGRATION_2_5 = object : Migration(2, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE book ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        database.execSQL("CREATE TABLE bookseries (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '')")
+        database.execSQL("ALTER TABLE book ADD COLUMN bookSeriesId INTEGER")
+        database.execSQL("ALTER TABLE book ADD COLUMN readingTime INTEGER")
+    }
+}
+
+val MIGRATION_3_5 = object : Migration(3, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("CREATE TABLE bookseries (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, title TEXT NOT NULL, description TEXT NOT NULL DEFAULT '')")
+        database.execSQL("ALTER TABLE book ADD COLUMN bookSeriesId INTEGER")
+        database.execSQL("ALTER TABLE book ADD COLUMN readingTime INTEGER")
+    }
+}
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE book ADD COLUMN readingTime INTEGER")
+    }
+}
+
+// Migrations to version 6

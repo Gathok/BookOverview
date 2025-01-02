@@ -7,7 +7,8 @@ enum class EditType {
     AUTHOR,
     ISBN,
     DESCRIPTION,
-    BOOK_SERIES;
+    BOOK_SERIES,
+    READING_TIME;
 
     val getTitleStringId: Int
         get() = when(this) {
@@ -16,5 +17,6 @@ enum class EditType {
             ISBN -> R.string.isbn
             DESCRIPTION -> R.string.description
             BOOK_SERIES -> R.string.book_series
+            READING_TIME -> R.string.reading_time
         }
 }
