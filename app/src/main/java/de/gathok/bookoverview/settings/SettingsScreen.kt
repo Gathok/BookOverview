@@ -4,8 +4,14 @@ package de.gathok.bookoverview.settings
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,9 +20,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,18 +41,26 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
+import de.gathok.bookoverview.overview.AppIcon
+import de.gathok.bookoverview.ui.CustomTopBar
 import de.gathok.bookoverview.ui.customIconDelete
+import de.gathok.bookoverview.util.NavTrashScreen
 import de.gathok.bookoverview.util.Screen
 
 @Composable
-fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: (SettingsEvent) -> Unit) {
+fun SettingsScreen(
+    navController: NavController,
+    openDrawer: () -> Unit,
+    state: SettingsState,
+    onEvent: (SettingsEvent) -> Unit
+) {
 
     onEvent(SettingsEvent.SettingsOpened)
 
     LaunchedEffect(key1 = state.curScreen) {
         when (state.curScreen) {
             Screen.Trash -> {
-                navController.navigate(Screen.Trash.route)
+                navController.navigate(NavTrashScreen)
             }
             else -> {
                 // Do nothing
@@ -65,19 +79,69 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
         versionName = null
     }
 
+    val saveExportFile = rememberLauncherForActivityResult(
+        CreateDocument("text/csv")
+    ) { uri ->
+        if (uri != null) {
+            try {
+                if (state.allBooks.isNullOrEmpty() || state.allBookSeries == null) {
+                    Toast.makeText(context, context.getString(R.string.no_data_to_export), Toast.LENGTH_SHORT).show()
+                    onEvent(SettingsEvent.ResetExportData)
+                    onEvent(SettingsEvent.SetLoading(false))
+                    return@rememberLauncherForActivityResult
+                }
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    var output = "Title,Author,ISBN,PossessionStatus,ReadStatus,Rating,Description,DeletedSince,BookSeriesId,ReadingTime,BSId,BSTitle,BSDescription\n"
+                    println(maxOf(state.allBooks.size, state.allBookSeries.size))
+                    for (i in 0..<maxOf(state.allBooks.size, state.allBookSeries.size)) {
+                        if (i < state.allBooks.size) {
+                            val book = state.allBooks[i]
+                            output += "${book.title},${book.author},${book.isbn},${book.possessionStatus},${book.readStatus},${book.rating},${book.description},${book.deletedSince},${book.bookSeriesId},${book.readingTime}"
+                        } else {
+                            output += ",,,,,,,,,,"
+                        }
+                        if (i < state.allBookSeries.size) {
+                            val series = state.allBookSeries[i]
+                            output += ",${series.id},${series.title},${series.description}"
+                        }
+                        output += "\n"
+                    }
+                    println(output)
+                    outputStream.write(output.toByteArray())
+                }
+                Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, context.getString(R.string.file_save_error), Toast.LENGTH_SHORT).show()
+            }
+        }
+        onEvent(SettingsEvent.ResetExportData)
+        onEvent(SettingsEvent.SetLoading(false))
+    }
+
+    LaunchedEffect(key1 = state.export) {
+        if (state.export) {
+//            if (state.allBooks.isNullOrEmpty() || state.allBookSeries == null) {
+//                Toast.makeText(context, context.getString(R.string.no_data_to_export), Toast.LENGTH_SHORT).show()
+//                return@LaunchedEffect
+//            }
+            saveExportFile.launch("BookOverview-export.csv")
+            println("Exporting:")
+        }
+    }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            CenterAlignedTopAppBar(
+            CustomTopBar(
                 title = {
                     Text(text = stringResource(id = R.string.settings))
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.back)
-                        )
+                    IconButton(
+                        onClick = { openDrawer() }
+                    ) {
+                        AppIcon()
                     }
                 }
             )
@@ -96,6 +160,15 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
                 onClick = { onEvent(SettingsEvent.OnTrashClicked) },
                 onLongClick = { }
             )
+            Spacer(modifier = Modifier.padding(8.dp))
+            SettingsItem(
+                title = stringResource(R.string.export_data),
+                description = stringResource(R.string.settings_export_desc),
+                icon = Icons.Default.Download,
+                onClick = { onEvent(SettingsEvent.OnExportClicked)
+                          println("called")},
+                onLongClick = { }
+            )
             Spacer(modifier = Modifier.weight(1f)) // This spacer pushes the version info to the bottom
             if (versionName != null) {
                 Text(
@@ -108,6 +181,18 @@ fun SettingsScreen(navController: NavController, state: SettingsState, onEvent: 
                     textAlign = TextAlign.Center
                 )
             }
+        }
+    }
+
+    // Loading ----------------------------------------------------------------
+    AnimatedVisibility(visible = state.isLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background.copy(alpha = 0.6f)),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
         }
     }
 }

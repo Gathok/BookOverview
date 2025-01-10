@@ -30,15 +30,11 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -61,8 +57,12 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.api.BookModel
+import de.gathok.bookoverview.data.BookSeries
+import de.gathok.bookoverview.ui.Dropdown
 import de.gathok.bookoverview.ui.customIconBarcodeScanner
-import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.util.NavAddScreen
+import de.gathok.bookoverview.util.NavOverviewScreen
+import de.gathok.bookoverview.util.NavScannerScreen
 
 @androidx.annotation.OptIn(ExperimentalGetImage::class)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -107,7 +107,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         topBar = {
             CenterAlignedTopAppBar(
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate(Screen.Overview.route) }) {
+                    IconButton(onClick = { navController.navigate(NavOverviewScreen) }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back)
                         )
                     }
@@ -130,7 +130,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                             }
                         } else {
                             onEvent(AddEvent.AddBook)
-                            navController.navigate(Screen.Overview.route)
+                            navController.navigate(NavAddScreen())
                         }
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.submit))
@@ -167,7 +167,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                     TextButton(onClick = {
                         showIncompleteError = false
                         onEvent(AddEvent.AddBook)
-                        navController.navigate(Screen.Overview.route)
+                        navController.navigate(NavOverviewScreen)
                     }) {
                         Text(stringResource(R.string.yes))
                     }
@@ -250,7 +250,7 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
                             modifier = Modifier
                                 .clickable {
                                     if (cameraPermission.status.isGranted) {
-                                        navController.navigate(Screen.Scanner.route)
+                                        navController.navigate(NavScannerScreen)
                                     } else {
                                         cameraPermission.launchPermissionRequest()
                                     }
@@ -303,13 +303,14 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
             Row (
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BookSeriesDropDown(
-                    selectedOption = state.bookSeriesTitle,
-                    options = state.bookSeriesTitleList,
+                Dropdown(
+                    selectedOption = Pair(
+                        state.bookSeries,
+                        state.bookSeries?.title ?: stringResource(R.string.no_series)
+                    ),
+                    options = state.bookSeriesList.associateBy({ it }, { it.title }),
                     label = stringResource(R.string.book_series),
-                    onValueChanged = { onEvent(AddEvent.BookSeriesTitleChanged(it)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
+                    onValueChanged = { onEvent(AddEvent.BookSeriesChanged(it as BookSeries?)) },
                 )
             }
         }
@@ -418,6 +419,7 @@ fun RatingBar(
     }
 }
 
+/* RIP BookSeriesDropDown
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSeriesDropDown(
@@ -482,6 +484,7 @@ fun BookSeriesDropDown(
         }
     }
 }
+*/
 
 //@Preview
 //@Composable

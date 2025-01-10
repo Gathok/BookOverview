@@ -48,6 +48,7 @@ class SettingsViewModel (
                     }
                 }
             }
+            // Trash ------------------------------------------------
             is SettingsEvent.OnTrashDeleteClicked -> {
                 viewModelScope.launch {
                     dao.deleteBook(event.book)
@@ -67,6 +68,30 @@ class SettingsViewModel (
                     dao.restoreAllTrash()
                     _state.value = _state.value.copy(trashedBooks = emptyList())
                 }
+            }
+            // Export ------------------------------------------------
+            SettingsEvent.OnExportClicked -> {
+                viewModelScope.launch {
+                    dao.getAllBooks().collect { books ->
+                        _state.value = _state.value.copy(allBooks = books)
+                    }
+                    dao.getAllBookSeries().collect { bookSeries ->
+                        _state.value = _state.value.copy(allBookSeries = bookSeries)
+                    }
+                }
+                _state.value = _state.value.copy(
+                    export = true,
+                )
+            }
+            SettingsEvent.ResetExportData -> {
+                _state.value = _state.value.copy(
+                    export = false,
+                    allBooks = emptyList(),
+                    allBookSeries = emptyList()
+                )
+            }
+            is SettingsEvent.SetLoading -> {
+                _state.value = _state.value.copy(isLoading = event.isLoading)
             }
         }
     }

@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookDao
-import de.gathok.bookoverview.data.BookSeries
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -40,10 +39,7 @@ class DetailsViewModel (
         val readStatusChanged = state.readStatus != book?.readStatus
         val ratingChanged = !((state.rating == book?.rating) ||
                 (state.rating == 0 && book?.rating == null))
-        val bookSeriesTitleChanged = (book?.bookSeriesId == null && state.bookSeriesTitle.isBlank()).xor(
-            state.bookSeriesTitle.trim() != book?.bookSeriesId?.let { bookSeriesId ->
-                bookSeriesList.find { it.id == bookSeriesId }?.title ?: "" }
-        )
+        val seriesChanged = (state.series?.id != book?.bookSeriesId)
         val readingTimeChanged = state.readingTime != book?.readingTime
 
         state.copy(
@@ -56,12 +52,12 @@ class DetailsViewModel (
             possessionStatusChanged = possessionStatusChanged,
             readStatusChanged = readStatusChanged,
             ratingChanged = ratingChanged,
-            bookSeriesTitleChanged = bookSeriesTitleChanged,
+            seriesChanged = seriesChanged,
             readingTimeChanged = readingTimeChanged,
             somethingChanged = titleChanged || authorChanged || isbnChanged || descriptionChanged ||
-                    possessionStatusChanged || readStatusChanged || ratingChanged || bookSeriesTitleChanged
+                    possessionStatusChanged || readStatusChanged || ratingChanged || seriesChanged
                     || readingTimeChanged,
-            bookSeriesListMap = bookSeriesList.associateBy({ it.title }, { it.id }),
+            bookSeriesList = bookSeriesList,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), DetailsState())
 
@@ -107,8 +103,8 @@ class DetailsViewModel (
                 _state.value = _state.value.copy(description = event.description)
             }
 
-            is DetailsEvent.BookSeriesTitleChanged -> {
-                _state.value = _state.value.copy(bookSeriesTitle = event.bookSeriesTitle)
+            is DetailsEvent.SeriesChanged -> {
+                _state.value = _state.value.copy(series = event.series)
             }
 
             is DetailsEvent.ReadingTimeChanged -> {
@@ -128,21 +124,6 @@ class DetailsViewModel (
             }
 
             DetailsEvent.UpdateBook -> {
-                var bookSeriesId: Int? = null
-                if (state.value.bookSeriesListMap.keys.contains(_state.value.bookSeriesTitle)) {
-                    bookSeriesId = state.value.bookSeriesListMap[_state.value.bookSeriesTitle]
-                } else if (_state.value.bookSeriesTitle.isNotBlank()) {
-                    val bookSeries = BookSeries(title = _state.value.bookSeriesTitle)
-                    viewModelScope.launch {
-                        dao.upsertBookSeries(bookSeries)
-                    }
-                }
-
-//                if (bookSeriesId == null) {
-//                    dao.getAllBookSeries().collect { bookSeriesList ->
-//                        bookSeriesId = bookSeriesList.find { it.title == _state.value.bookSeriesTitle }?.id
-//                    }
-//                }
                 val book = Book(
                     id = _bookId.value,
                     title = _state.value.title,
@@ -155,7 +136,7 @@ class DetailsViewModel (
                         else -> _state.value.rating
                     },
                     description = _state.value.description,
-                    bookSeriesId = bookSeriesId,
+                    bookSeriesId = _state.value.series?.id,
                     readingTime = _state.value.readingTime
                 )
                 viewModelScope.launch {
@@ -176,9 +157,7 @@ class DetailsViewModel (
                     readStatus = event.book.readStatus,
                     rating = event.book.rating ?: 0,
                     description = event.book.description,
-                    bookSeriesTitle = event.book.bookSeriesId?.let { bookSeriesId ->
-                        state.value.bookSeriesListMap.entries.find { it.value == bookSeriesId }?.key ?: ""
-                    } ?: "",
+                    series = _bookSeriesList.value.find { it.id == event.book.bookSeriesId },
                     readingTime = event.book.readingTime,
                     coverImage = "",
                     onlineDescription = "",

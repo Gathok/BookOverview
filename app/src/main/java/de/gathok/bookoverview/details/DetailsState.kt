@@ -1,6 +1,7 @@
 package de.gathok.bookoverview.details
 
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.data.BookSeries
 
 data class DetailsState(
     val bookId: Int? = null,
@@ -18,17 +19,16 @@ data class DetailsState(
     val readStatusChanged: Boolean = false,
     val rating: Int = 0,
     val ratingChanged: Boolean = false,
-    val description: String = "",
-    val descriptionChanged: Boolean = false,
-    val bookSeriesTitle: String = "",
-    val bookSeriesTitleChanged: Boolean = false,
-
     val readingTime: Int? = null,
     val readingTimeChanged: Boolean = false,
+    val description: String = "",
+    val descriptionChanged: Boolean = false,
+
+    val bookSeriesList: List<BookSeries> = emptyList(),
+    val series: BookSeries? = null,
+    val seriesChanged: Boolean = false,
 
     val somethingChanged: Boolean = false,
-
-    val bookSeriesListMap: Map<String, Int> = emptyMap(),
 
     val isEditing: Boolean = false,
     val isDoubleIsbn: Boolean = false,

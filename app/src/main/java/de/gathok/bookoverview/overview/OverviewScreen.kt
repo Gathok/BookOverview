@@ -5,10 +5,6 @@
 package de.gathok.bookoverview.overview
 
 import android.annotation.SuppressLint
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -30,12 +26,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -54,16 +50,13 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -83,13 +76,17 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.ui.CustomTopBar
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.ui.customIconFilterList
 import de.gathok.bookoverview.ui.customIconRead
-import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.ui.swipeContainer.ActionIcon
+import de.gathok.bookoverview.ui.swipeContainer.SwipeItem
+import de.gathok.bookoverview.util.NavAddScreen
+import de.gathok.bookoverview.util.NavDetailsScreen
+import de.gathok.bookoverview.util.NavScannerScreen
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,6 +94,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun OverviewScreen(
     navController: NavController,
+    openDrawer: () -> Unit,
     state: OverviewState,
     onEvent: (OverviewEvent) -> Unit
 ) {
@@ -167,30 +165,36 @@ fun OverviewScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            CenterAlignedTopAppBar(
+            CustomTopBar(
                 title = {
                     Text(text = stringResource(id = R.string.app_name))
                 },
                 navigationIcon = {
                     IconButton(onClick = {
-                        // TODO: Navigate to website someday
+                        openDrawer()
                     }) {
-                        Image(
-                            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
-                            contentDescription = "App Icon",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .scale(1.5f)
-                        )
+                        AppIcon()
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        navController.navigate(Screen.Settings.route)
-                    }) {
-                        Icon(Icons.Filled.Settings, contentDescription = stringResource(id = R.string.settings))
-                    }
-                }
+                    Icon(
+                        imageVector = Icons.Filled.AddCircle,
+                        contentDescription = "Add Book",
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .combinedClickable (
+                                onClick = {
+                                    navController.navigate(NavAddScreen())
+                                },
+                                onLongClick = {
+                                    navController.navigate(NavScannerScreen)
+                                }
+                            )
+                    )
+                },
+                modifier = Modifier
+                    .padding(bottom = 8.dp)
+                    .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 12.dp, bottomEnd = 12.dp))
             )
         },
         floatingActionButton = {
@@ -204,10 +208,10 @@ fun OverviewScreen(
                         .padding(16.dp)
                         .combinedClickable(
                             onClick = {
-                                navController.navigate(Screen.Add.route + "/null")
+                                navController.navigate(NavAddScreen())
                             },
                             onLongClick = {
-                                navController.navigate(Screen.Scanner.route)
+                                navController.navigate(NavScannerScreen)
                             }
                         )
                 )
@@ -227,7 +231,7 @@ fun OverviewScreen(
                 ) {
                     SearchBar(
                         value = state.searchQuery,
-                        onValueChange = { onEvent(OverviewEvent.ChangeSearchQuery(it)) },
+                        onValueChange = { onEvent(OverviewEvent.SearchQueryChanged(it)) },
                         modifier = Modifier
                             .weight(1f)
                     )
@@ -252,25 +256,40 @@ fun OverviewScreen(
                     ) { book ->
                         val actionLabel = stringResource(id = R.string.restore)
                         val message = "\"${book.title}\" ${stringResource(id = R.string.deleted)}"
-                        SwipeContainer(
-                            item = book,
-                            onDetails = {
-                                navController.navigate("${Screen.Details.route}/${it.id}")
+                        SwipeItem (
+                            leftOptions = {
+                                ActionIcon(
+                                    onClick = {
+                                        navController.navigate(NavDetailsScreen(book.id))
+                                    },
+                                    backgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                                    icon = Icons.Default.Info,
+                                    contentDescription = "Details",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
                             },
-                            onDelete = {
-                                onEvent(OverviewEvent.DeleteBook(it))
-                                deletedBook = it
-                                coroutineScope.launch {
-                                    val snackbarResult = snackbarHostState.showSnackbar(
-                                        message = message,
-                                        actionLabel = actionLabel,
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    if (snackbarResult == SnackbarResult.ActionPerformed) {
-                                        onEvent(OverviewEvent.RestoreBook(deletedBook!!))
-                                        println("Action Performed")
-                                    }
-                                }
+                            rightOptions = {
+                                ActionIcon(
+                                    onClick = {
+                                        onEvent(OverviewEvent.DeleteBook(book))
+                                        deletedBook = book
+                                        coroutineScope.launch {
+                                            val snackbarResult = snackbarHostState.showSnackbar(
+                                                message = message,
+                                                actionLabel = actionLabel,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            if (snackbarResult == SnackbarResult.ActionPerformed) {
+                                                onEvent(OverviewEvent.RestoreBook(deletedBook!!))
+                                                println("Action Performed")
+                                            }
+                                        }
+                                    },
+                                    backgroundColor = MaterialTheme.colorScheme.errorContainer,
+                                    icon = Icons.Default.Delete,
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.onErrorContainer
+                                )
                             },
                         ) {
                             Column (
@@ -573,6 +592,7 @@ fun TripleSwitch(
     }
 }
 
+/* RIP SwipeContainer
 @Composable
 fun <T> SwipeContainer(
     item: T,
@@ -668,7 +688,7 @@ fun SwipeBackground(
             )
         }
     }
-}
+}*/
 
 @Composable
 fun SearchBar(
@@ -691,4 +711,21 @@ fun SearchBar(
             disabledIndicatorColor = Color.Transparent
         ),
     )
+}
+
+@Composable
+fun AppIcon() {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    ) {
+        Image (
+            painter = painterResource(id = R.mipmap.ic_launcher_foreground),
+            contentDescription = "Menu",
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .scale(1.5f)
+        )
+    }
 }

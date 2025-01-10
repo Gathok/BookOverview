@@ -70,9 +70,19 @@
     <string name="not_owned">Not owned</string>
     <string name="not_read">Not read</string>
     <string name="book_series">Book series</string>
-    <string name="no_book_series">No book series assigned</string>
+    <string name="no_series">No series</string>
     <string name="reading_time">Reading time</string>
     <string name="no_reading_time">No reading time tracked</string>
     <string name="hours">hours</string>
     <string name="add_minutes">Add minutes</string>
+    <string name="export_data">Export Data</string>
+    <string name="settings_export_desc">Export data as csv file</string>
+    <string name="file_saved">File saved</string>
+    <string name="file_save_error">Error while saving file</string>
+    <string name="no_data_to_export">Failed: no data to export</string>
+    <string name="books">Books</string>
+    <string name="add_series">Add Series</string>
+    <string name="name_already_in_use">Name already in use.</string>
+    <string name="new_series">New Series</string>
+    <string name="no_series_assigned">No series assigned</string>
 </resources>

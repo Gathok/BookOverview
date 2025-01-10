@@ -1,6 +1,7 @@
 package de.gathok.bookoverview.details
 
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.data.BookSeries
 
 sealed class DetailsEvent {
     data class ChangeBookId(val bookId: Int): DetailsEvent()
@@ -12,7 +13,7 @@ sealed class DetailsEvent {
     data class ReadStatusChanged(val readStatus: Boolean): DetailsEvent()
     data class RatingChanged(val rating: Int): DetailsEvent()
     data class DescriptionChanged(val description: String): DetailsEvent()
-    data class BookSeriesTitleChanged(val bookSeriesTitle: String): DetailsEvent()
+    data class SeriesChanged(val series: BookSeries?): DetailsEvent()
     data class ReadingTimeChanged(val readingTime: Int?): DetailsEvent()
 
     data class SetCoverImage(val coverImage: String): DetailsEvent()

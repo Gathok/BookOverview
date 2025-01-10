@@ -68,9 +68,19 @@
     <string name="not_owned">Nicht im Besitz</string>
     <string name="not_read">Nicht gelesen</string>
     <string name="book_series">Buch Serie</string>
-    <string name="no_book_series">Keine Buch Serie hinterlegt</string>
+    <string name="no_series">Keine Serie hinterlegt</string>
     <string name="reading_time">Lesezeit</string>
     <string name="no_reading_time">Keine Lesezeit erfasst</string>
     <string name="hours">Stunden</string>
     <string name="add_minutes">Minuten hinzufügen</string>
+    <string name="export_data">Daten exportieren</string>
+    <string name="settings_export_desc">Daten als csv Datei exportieren</string>
+    <string name="file_saved">Datei gespeichert</string>
+    <string name="file_save_error">Fehler beim Speichern der Datei</string>
+    <string name="no_data_to_export">Fehlgeschlagen: keine Daten zum Exportieren</string>
+    <string name="books">Bücher</string>
+    <string name="add_series">Serie hinzufügen</string>
+    <string name="name_already_in_use">Name bereits verwendet.</string>
+    <string name="new_series">Neue Serie</string>
+    <string name="no_series_assigned">Keine Serie zugewiesen</string>
 </resources>

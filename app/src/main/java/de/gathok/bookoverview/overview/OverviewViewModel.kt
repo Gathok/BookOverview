@@ -53,7 +53,7 @@ class OverviewViewModel (
                 arrayOf(possessionStatus, readStatus, searchQuery)
             )
 
-            dao.rawQuery(query)
+            dao.bookRawQuery(query)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
     private val _state = MutableStateFlow(OverviewState())
     val state = combine(_state, _books) { state, books ->
@@ -84,7 +84,7 @@ class OverviewViewModel (
                     dao.upsertBook(event.book)
                 }
             }
-            is OverviewEvent.ChangeSearchQuery -> {
+            is OverviewEvent.SearchQueryChanged -> {
                 _searchQuery.value = event.searchQuery
                 _state.value = _state.value.copy(searchQuery = event.searchQuery)
             }

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookDao
-import de.gathok.bookoverview.data.BookSeries
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -22,7 +21,7 @@ class AddViewModel (
 
     val state = combine(_state, _bookSeriesList) { state, bookSeriesList ->
         state.copy(
-            bookSeriesTitleList = bookSeriesList.map { it.title }
+            bookSeriesList = bookSeriesList
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AddState())
 
@@ -67,24 +66,11 @@ class AddViewModel (
             is AddEvent.AddBook -> {
                 val title = _state.value.title.trim()
                 if (title.isBlank()) return
-
                 val author = _state.value.author.trim()
                 val isbn = _state.value.isbn.trim()
                 val possessionStatus = _state.value.possessionStatus
                 val readStatus = _state.value.readStatus
                 val rating = _state.value.rating
-                val bookSeriesTitle = _state.value.bookSeriesTitle.trim()
-
-                val bookSeries = if (bookSeriesTitle.isNotBlank()) {
-                    _bookSeriesList.value.find { it.title == bookSeriesTitle }
-                        ?: BookSeries(title = bookSeriesTitle)
-                } else null
-
-                viewModelScope.launch {
-                    if (bookSeries != null) {
-                        dao.upsertBookSeries(bookSeries)
-                    }
-                }
 
                 val book = Book(
                     title = title,
@@ -93,7 +79,7 @@ class AddViewModel (
                     possessionStatus = possessionStatus,
                     readStatus = readStatus,
                     rating = rating,
-                    bookSeriesId = bookSeries?.id
+                    bookSeriesId = _state.value.bookSeries?.id
                 )
 
                 viewModelScope.launch {
@@ -105,8 +91,10 @@ class AddViewModel (
             is AddEvent.ClearFields -> {
                 _state.value = AddState()
             }
-            is AddEvent.BookSeriesTitleChanged -> {
-                _state.value = _state.value.copy(bookSeriesTitle = event.bookSeriesTitle)
+            is AddEvent.BookSeriesChanged -> {
+                _state.value = _state.value.copy(
+                    bookSeries = event.bookSeries
+                )
             }
         }
     }

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface BookDao{
 
+    // Book Queries --------------------------------------------------
     @Upsert
     suspend fun upsertBook(book: Book)
 
@@ -47,10 +48,17 @@ interface BookDao{
     @Query("UPDATE book SET bookSeriesId = :bookSeriesId WHERE id = :id")
     suspend fun setBookSeriesId(id: Int, bookSeriesId: Int)
 
+    @Query("SELECT * FROM book")
+    fun getAllBooks(): Flow<List<Book>>
+
+    // RawQueries --------------------------------------------------------
     @RawQuery(observedEntities = [Book::class])
-    fun rawQuery(query: SupportSQLiteQuery): Flow<List<Book>>
+    fun bookRawQuery(query: SupportSQLiteQuery): Flow<List<Book>>
 
+    @RawQuery(observedEntities = [BookSeries::class])
+    fun seriesRawQuery(query: SupportSQLiteQuery): Flow<List<BookSeries>>
 
+    // BookSeries Queries ------------------------------------------------
     @Upsert
     suspend fun upsertBookSeries(bookSeries: BookSeries)
 

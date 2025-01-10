@@ -1,10 +1,38 @@
 package de.gathok.bookoverview.util
 
-sealed class Screen(val route: String) {
-    data object Overview : Screen("overview")
-    data object Add : Screen("add")
-    data object Details : Screen("details")
-    data object Scanner : Screen("add/scanner")
-    data object Settings : Screen("settings")
-    data object Trash : Screen("settings/trash")
+import kotlinx.serialization.Serializable
+
+enum class Screen {
+    Overview,
+    Add,
+    Details,
+    Scanner,
+    Settings,
+    Trash,
+    SeriesOverview,
 }
+
+@Serializable
+object NavOverviewScreen
+
+@Serializable
+data class NavAddScreen (
+    val isbn: String? = null
+)
+
+@Serializable
+data class NavDetailsScreen (
+    val bookId: Int
+)
+
+@Serializable
+object NavScannerScreen
+
+@Serializable
+object NavSettingsScreen
+
+@Serializable
+object NavTrashScreen
+
+@Serializable
+object NavSeriesOverviewScreen

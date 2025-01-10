@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.RemoveCircle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,10 +53,11 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.gathok.bookoverview.R
-import de.gathok.bookoverview.add.BookSeriesDropDown
 import de.gathok.bookoverview.add.RatingBar
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.data.BookSeries
+import de.gathok.bookoverview.ui.Dropdown
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconRead
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
@@ -64,13 +66,6 @@ import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 @Composable
 fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
                   bookId: Int?, testBook: Book? = null) {
-
-    LaunchedEffect(key1 = testBook) {
-        if (testBook != null) {
-            onEvent(DetailsEvent.ResetState)
-            onEvent(DetailsEvent.ChangeBook(testBook))
-        }
-    }
 
     LaunchedEffect (key1 = bookId) {
         onEvent(DetailsEvent.ResetState)
@@ -83,17 +78,18 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
 
     LaunchedEffect (key1 = state.book) {
         if (state.book != null) {
-            onEvent(DetailsEvent.TitleChanged(state.book.title))
-            onEvent(DetailsEvent.AuthorChanged(state.book.author))
-            onEvent(DetailsEvent.IsbnChanged(state.book.isbn))
-            onEvent(DetailsEvent.PossessionStatusChanged(state.book.possessionStatus))
-            onEvent(DetailsEvent.ReadStatusChanged(state.book.readStatus))
-            onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
-            onEvent(DetailsEvent.DescriptionChanged(state.book.description))
-            onEvent(DetailsEvent.BookSeriesTitleChanged(state.bookSeriesListMap.entries.find {
-                it.value == state.book.bookSeriesId
-            }?.key ?: ""))
-            onEvent(DetailsEvent.ReadingTimeChanged(state.book.readingTime))
+//            onEvent(DetailsEvent.TitleChanged(state.book.title))
+//            onEvent(DetailsEvent.AuthorChanged(state.book.author))
+//            onEvent(DetailsEvent.IsbnChanged(state.book.isbn))
+//            onEvent(DetailsEvent.PossessionStatusChanged(state.book.possessionStatus))
+//            onEvent(DetailsEvent.ReadStatusChanged(state.book.readStatus))
+//            onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
+//            onEvent(DetailsEvent.DescriptionChanged(state.book.description))
+//            onEvent(DetailsEvent.SeriesChanged(state.bookSeriesList.entries.find {
+//                it.value == state.book.bookSeriesId
+//            }?.key ?: ""))
+//            onEvent(DetailsEvent.ReadingTimeChanged(state.book.readingTime))
+            onEvent(DetailsEvent.ChangeBook(state.book))
 
             if (state.book.isbn.length == 13 && state.book.isbn.startsWith("978")) {
                 val bookResponse = BookModel.bookService.getBook(
@@ -181,6 +177,8 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
         var showEditDialog by remember { mutableStateOf(false) }
         var curEditType by remember { mutableStateOf(EditType.TITLE) }
 
+        val NO_SERIES = stringResource(R.string.no_series)
+
         if (showConfirmLeaveDialog) {
             AlertDialog(
                 title = { Text(stringResource(R.string.error_save_changes)) },
@@ -232,15 +230,16 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
         }
 
         if (showEditDialog) {
-            var tempValue by remember { mutableStateOf("") }
+            var tempString by remember { mutableStateOf("") }
+            var tempSeries by remember { mutableStateOf(state.series) }
 
             LaunchedEffect(key1 = curEditType) {
-                tempValue = when (curEditType) {
+                tempString = when (curEditType) {
                     EditType.TITLE -> state.title
                     EditType.AUTHOR -> state.author
                     EditType.ISBN -> state.isbn
                     EditType.DESCRIPTION -> state.description
-                    EditType.BOOK_SERIES -> state.bookSeriesTitle
+                    EditType.BOOK_SERIES -> state.series?.title ?: NO_SERIES
                     EditType.READING_TIME -> ""
                 }
             }
@@ -255,19 +254,22 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 text = {
                     when (curEditType) {
                         EditType.BOOK_SERIES -> {
-                            BookSeriesDropDown(
-                                selectedOption = tempValue,
-                                options = state.bookSeriesListMap.keys.toList(),
-                                label = stringResource(R.string.book_series),
-                                onValueChanged = { tempValue = it },
-                                modifier = Modifier
-                                    .fillMaxWidth()
+//                            val options: Map<Any?, String> = state.bookSeriesList.associateBy({ it as BookSeries? }, { it.title })
+//                                .toMutableMap().apply { put(null, stringResource(R.string.no_series)) }.toMap()
+
+                            Dropdown(
+                                selectedOption = Pair(tempSeries, tempSeries?.title ?: NO_SERIES),
+                                options = state.bookSeriesList.associateBy({ it }, { it.title }),
+                                onValueChanged = { newSeries ->
+                                    tempSeries = newSeries as BookSeries
+                                },
+                                label = stringResource(R.string.new_series),
                             )
                         }
                         EditType.READING_TIME -> {
                             OutlinedTextField(
-                                value = tempValue,
-                                onValueChange = { tempValue = it },
+                                value = tempString,
+                                onValueChange = { tempString = it },
                                 label = {
                                     Text(
                                         text = stringResource(
@@ -282,8 +284,8 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                         }
                         else -> {
                             OutlinedTextField(
-                                value = tempValue,
-                                onValueChange = { tempValue = it },
+                                value = tempString,
+                                onValueChange = { tempString = it },
                                 label = {
                                     Text(
                                         text = stringResource(
@@ -298,22 +300,46 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 },
                 onDismissRequest = { showEditDialog = false },
                 confirmButton = {
-                    TextButton(
-                        onClick = {
-                            when (curEditType) {
-                                EditType.TITLE -> onEvent(DetailsEvent.TitleChanged(tempValue))
-                                EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempValue))
-                                EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempValue))
-                                EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempValue))
-                                EditType.BOOK_SERIES -> onEvent(DetailsEvent.BookSeriesTitleChanged(tempValue))
-                                EditType.READING_TIME -> onEvent(DetailsEvent.ReadingTimeChanged(
-                                    (tempValue.toIntOrNull() ?: 0) + (state.readingTime ?: 0)
-                                ))
+                    Row {
+                        if (curEditType == EditType.READING_TIME) {
+                            TextButton(
+                                onClick = {
+                                    onEvent(DetailsEvent.ReadingTimeChanged(
+                                        (state.readingTime ?: 0) - (tempString.toIntOrNull() ?: 0)
+                                    ))
+                                    showEditDialog = false
+                                }
+                            ) {
+                                Icon (
+                                    imageVector = Icons.Default.RemoveCircle,
+                                    contentDescription = "Subtract Time"
+                                )
                             }
-                            showEditDialog = false
                         }
-                    ) {
-                        Text(text = stringResource(R.string.ok))
+                        TextButton (
+                            onClick = {
+                                when (curEditType) {
+                                    EditType.TITLE -> onEvent(DetailsEvent.TitleChanged(tempString))
+                                    EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempString))
+                                    EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempString))
+                                    EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempString))
+                                    EditType.BOOK_SERIES -> onEvent(DetailsEvent.SeriesChanged(tempSeries))
+                                    EditType.READING_TIME -> onEvent(DetailsEvent.ReadingTimeChanged(
+                                        (state.readingTime ?: 0) + (tempString.toIntOrNull() ?: 0)
+                                    ))
+                                }
+                                showEditDialog = false
+                            }
+                        ) {
+                            if (curEditType != EditType.READING_TIME) {
+                                Text(text = stringResource(R.string.ok))
+                            } else {
+                                Icon (
+                                    imageVector = Icons.Default.AddCircle,
+                                    contentDescription = "Add Time"
+                                )
+                            }
+                        }
                     }
                 },
                 dismissButton = {
@@ -511,7 +537,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     )
                 }
             }
-            /* FIX BOOK SERIES
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
@@ -527,22 +552,20 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     Text(
                         text = stringResource(R.string.book_series),
                         style = MaterialTheme.typography.titleMedium,
-                        color = if (state.bookSeriesTitleChanged) {
+                        color = if (state.seriesChanged) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.onSurface
                         },
                     )
                     Text(
-                        text = state.bookSeriesTitle.ifBlank {
-                                stringResource(R.string.no_book_series)
-                        },
+                        text = state.series?.title ?: stringResource(R.string.no_series_assigned),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-            }*/
+            }
             Row (
                 modifier = Modifier
                     .fillMaxWidth()

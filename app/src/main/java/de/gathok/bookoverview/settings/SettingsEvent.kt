@@ -11,5 +11,7 @@ sealed class SettingsEvent {
     data class OnTrashDeleteClicked(val book: Book) : SettingsEvent()
     data object OnTrashDeleteAllClicked : SettingsEvent()
     data object OnTrashRestoreAllClicked : SettingsEvent()
-
+    data object OnExportClicked : SettingsEvent()
+    data class SetLoading(val isLoading: Boolean) : SettingsEvent()
+    data object ResetExportData : SettingsEvent()
 }

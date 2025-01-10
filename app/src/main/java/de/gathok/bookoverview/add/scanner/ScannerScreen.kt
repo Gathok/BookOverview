@@ -44,7 +44,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.ui.customIconFlashlightOff
 import de.gathok.bookoverview.ui.customIconFlashlightOn
-import de.gathok.bookoverview.util.Screen
+import de.gathok.bookoverview.util.NavAddScreen
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -179,7 +179,7 @@ fun ScannerScreen(navController: NavController? = null) {
                             // check if lastScannedBarcode is a valid ISBN
                             // if so, navigate to Add screen with the ISBN
                             if (lastScannedBarcode?.length == 13 && lastScannedBarcode?.startsWith("978") == true) {
-                                navController?.navigate(Screen.Add.route + "/${lastScannedBarcode}")
+                                navController?.navigate(NavAddScreen(lastScannedBarcode))
                             }
                         }
                     )

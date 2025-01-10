@@ -1,5 +1,7 @@
 package de.gathok.bookoverview.add
 
+import de.gathok.bookoverview.data.BookSeries
+
 data class AddState(
     val title: String = "",
     val author: String = "",
@@ -11,7 +13,6 @@ data class AddState(
     val isScanning: Boolean = false,
     val isDoubleIsbn: Boolean = false,
     val showCompleteWithIsbn: Boolean = false,
-    val bookSeriesId: Int? = null,
-    val bookSeriesTitle: String = "",
-    val bookSeriesTitleList: List<String> = emptyList(),
+    val bookSeries: BookSeries? = null,
+    val bookSeriesList: List<BookSeries> = emptyList(),
 )
