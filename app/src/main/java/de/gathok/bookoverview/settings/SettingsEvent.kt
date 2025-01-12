@@ -1,5 +1,7 @@
 package de.gathok.bookoverview.settings
 
+import android.content.Context
+import android.net.Uri
 import de.gathok.bookoverview.data.Book
 
 sealed class SettingsEvent {
@@ -14,4 +16,5 @@ sealed class SettingsEvent {
     data object OnExportClicked : SettingsEvent()
     data class SetLoading(val isLoading: Boolean) : SettingsEvent()
     data object ResetExportData : SettingsEvent()
+    data class OnImport(val uri: Uri, val context: Context) : SettingsEvent()
 }

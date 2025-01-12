@@ -11,6 +11,7 @@ data class SettingsState(
     val trashedBooks: List<Book> = emptyList(),
 
     val export: Boolean = false,
+    val import: Boolean = false,
     val allBooks: List<Book>? = null,
     val allBookSeries: List<BookSeries>? = null,
     val isLoading: Boolean = false,

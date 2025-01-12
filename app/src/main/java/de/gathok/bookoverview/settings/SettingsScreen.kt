@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -31,6 +32,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -42,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.overview.AppIcon
+import de.gathok.bookoverview.settings.import.ImportDialog
 import de.gathok.bookoverview.ui.CustomTopBar
 import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.util.NavTrashScreen
@@ -83,30 +89,27 @@ fun SettingsScreen(
         CreateDocument("text/csv")
     ) { uri ->
         if (uri != null) {
+            println("Hello")
             try {
-                if (state.allBooks.isNullOrEmpty() || state.allBookSeries == null) {
+                if (state.allBooks.isNullOrEmpty()) {
                     Toast.makeText(context, context.getString(R.string.no_data_to_export), Toast.LENGTH_SHORT).show()
                     onEvent(SettingsEvent.ResetExportData)
                     onEvent(SettingsEvent.SetLoading(false))
                     return@rememberLauncherForActivityResult
                 }
                 context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-                    var output = "Title,Author,ISBN,PossessionStatus,ReadStatus,Rating,Description,DeletedSince,BookSeriesId,ReadingTime,BSId,BSTitle,BSDescription\n"
-                    println(maxOf(state.allBooks.size, state.allBookSeries.size))
-                    for (i in 0..<maxOf(state.allBooks.size, state.allBookSeries.size)) {
-                        if (i < state.allBooks.size) {
-                            val book = state.allBooks[i]
-                            output += "${book.title},${book.author},${book.isbn},${book.possessionStatus},${book.readStatus},${book.rating},${book.description},${book.deletedSince},${book.bookSeriesId},${book.readingTime}"
-                        } else {
-                            output += ",,,,,,,,,,"
-                        }
-                        if (i < state.allBookSeries.size) {
-                            val series = state.allBookSeries[i]
-                            output += ",${series.id},${series.title},${series.description}"
-                        }
-                        output += "\n"
+                    var output = "Title,Author,ISBN,PossessionStatus,ReadStatus,Rating,Description,DeletedSince,BookSeries,ReadingTime,\n"
+                    val seriesIdToName = state.allBookSeries?.associate { series ->
+                        series.id to series.title
+                    } ?: emptyMap()
+                    state.allBooks.forEach { book ->
+                        output += "${formatForCsv(book.title)},${formatForCsv(book.author)}," +
+                                "${formatForCsv(book.isbn)},${formatForCsv(book.possessionStatus)}," +
+                                "${formatForCsv(book.readStatus)},${formatForCsv(book.rating)}," +
+                                "${formatForCsv(book.description)},${formatForCsv(book.deletedSince)}," +
+                                "${formatForCsv(seriesIdToName[book.bookSeriesId] ?: "")}," +
+                                "${formatForCsv(book.readingTime)}\n"
                     }
-                    println(output)
                     outputStream.write(output.toByteArray())
                 }
                 Toast.makeText(context, context.getString(R.string.file_saved), Toast.LENGTH_SHORT).show()
@@ -119,15 +122,24 @@ fun SettingsScreen(
         onEvent(SettingsEvent.SetLoading(false))
     }
 
-    LaunchedEffect(key1 = state.export) {
+    LaunchedEffect(state.export) {
         if (state.export) {
-//            if (state.allBooks.isNullOrEmpty() || state.allBookSeries == null) {
-//                Toast.makeText(context, context.getString(R.string.no_data_to_export), Toast.LENGTH_SHORT).show()
-//                return@LaunchedEffect
-//            }
             saveExportFile.launch("BookOverview-export.csv")
-            println("Exporting:")
         }
+    }
+
+    var showImportDialog by remember { mutableStateOf(false) }
+
+    if (showImportDialog) {
+        ImportDialog(
+            onDismiss = { showImportDialog = false },
+            onFinish = { uri ->
+                showImportDialog = false
+                onEvent(SettingsEvent.SetLoading(true))
+                onEvent(SettingsEvent.OnImport(uri, context))
+                onEvent(SettingsEvent.SetLoading(false))
+            }
+        )
     }
 
     Scaffold(
@@ -165,8 +177,15 @@ fun SettingsScreen(
                 title = stringResource(R.string.export_data),
                 description = stringResource(R.string.settings_export_desc),
                 icon = Icons.Default.Download,
-                onClick = { onEvent(SettingsEvent.OnExportClicked)
-                          println("called")},
+                onClick = { onEvent(SettingsEvent.OnExportClicked)},
+                onLongClick = { }
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            SettingsItem(
+                title = stringResource(R.string.import_data),
+                description = stringResource(R.string.settings_import_desc),
+                icon = Icons.Default.Upload,
+                onClick = { showImportDialog = true },
                 onLongClick = { }
             )
             Spacer(modifier = Modifier.weight(1f)) // This spacer pushes the version info to the bottom
@@ -195,6 +214,10 @@ fun SettingsScreen(
             CircularProgressIndicator()
         }
     }
+}
+
+fun formatForCsv(value: Any?): String {
+    return "\"$value\""
 }
 
 @Composable

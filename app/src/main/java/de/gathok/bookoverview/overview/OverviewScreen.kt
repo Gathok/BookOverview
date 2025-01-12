@@ -25,7 +25,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
@@ -36,7 +35,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,8 +48,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
-import androidx.compose.material3.SwipeToDismissBoxState
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -78,7 +74,6 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.ui.CustomTopBar
 import de.gathok.bookoverview.ui.customIconBook
-import de.gathok.bookoverview.ui.customIconDelete
 import de.gathok.bookoverview.ui.customIconFilterList
 import de.gathok.bookoverview.ui.customIconRead
 import de.gathok.bookoverview.ui.swipeContainer.ActionIcon
@@ -89,7 +84,6 @@ import de.gathok.bookoverview.util.NavScannerScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun OverviewScreen(
@@ -197,26 +191,28 @@ fun OverviewScreen(
                     .clip(RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 12.dp, bottomEnd = 12.dp))
             )
         },
+        /* RIP FloatingActionButton
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {  }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = stringResource(id = R.string.add_book),
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .combinedClickable(
-                            onClick = {
-                                navController.navigate(NavAddScreen())
-                            },
-                            onLongClick = {
-                                navController.navigate(NavScannerScreen)
-                            }
-                        )
-                )
-            }
+        FloatingActionButton(
+        onClick = {  }
+        ) {
+        Icon(
+        imageVector = Icons.Filled.Add,
+        contentDescription = stringResource(id = R.string.add_book),
+        modifier = Modifier
+        .padding(16.dp)
+        .combinedClickable(
+        onClick = {
+        navController.navigate(NavAddScreen())
         },
+        onLongClick = {
+        navController.navigate(NavScannerScreen)
+        }
+        )
+        )
+        }
+        },
+        */
     ) { pad ->
         Box (modifier = Modifier.fillMaxSize()) {
             Column (
