@@ -13,7 +13,9 @@ enum class Screen {
 }
 
 @Serializable
-object NavOverviewScreen
+data class NavOverviewScreen (
+    val authorToSearch: String? = null,
+)
 
 @Serializable
 data class NavAddScreen (

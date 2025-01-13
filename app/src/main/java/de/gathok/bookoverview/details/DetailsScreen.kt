@@ -60,6 +60,7 @@ import de.gathok.bookoverview.ui.Dropdown
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconRead
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
+import de.gathok.bookoverview.util.NavOverviewScreen
 
 
 @Composable
@@ -447,9 +448,7 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                                         }
                                     },
                                     onLongClick = {
-                                        if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
-                                        curEditType = EditType.AUTHOR
-                                        showEditDialog = true
+                                        navController.navigate(NavOverviewScreen(authorToSearch = state.author))
                                     }
                                 )
                         )

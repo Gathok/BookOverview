@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
@@ -53,6 +54,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,10 +92,23 @@ fun OverviewScreen(
     navController: NavController,
     openDrawer: () -> Unit,
     state: OverviewState,
-    onEvent: (OverviewEvent) -> Unit
+    onEvent: (OverviewEvent) -> Unit,
+    authorToSearch: String? = null
 ) {
     val coroutineScope: CoroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(authorToSearch) {
+        if (authorToSearch != null) {
+            onEvent(OverviewEvent.ChangeFilterList(
+                state.possessionStatus,
+                state.readStatus,
+                sortType = SortType.AUTHOR,
+                searchType = SearchType.AUTHOR
+            ))
+            onEvent(OverviewEvent.SearchQueryChanged(authorToSearch))
+        }
+    }
 
     var showFilterDialog by remember { mutableStateOf(false) }
     var deletedBook by remember { mutableStateOf<Book?>(null) }
@@ -699,6 +714,13 @@ fun SearchBar(
         modifier = modifier,
         placeholder = { Text(text = hint) },
         leadingIcon = { Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search)) },
+        trailingIcon = {
+            if (value.isNotEmpty()) {
+                IconButton(onClick = { onValueChange("") }) {
+                    Icon(Icons.Filled.Clear, contentDescription = "Clear Search")
+                }
+            }
+        },
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(

@@ -177,7 +177,7 @@ class MainActivity : ComponentActivity() {
                                     selected = selectedScreen.value == Screen.Overview,
                                     onClick = {
                                         selectedScreen.value = Screen.Overview
-                                        navController.navigate(NavOverviewScreen)
+                                        navController.navigate(NavOverviewScreen())
                                         scope.launch {
                                             drawerState.close()
                                         }
@@ -264,10 +264,11 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit,
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavOverviewScreen,
+        startDestination = NavOverviewScreen(),
     ) {
         composable<NavOverviewScreen> {
-            OverviewScreen(navController, openDrawer, overviewState, overviewEvent)
+            val args = it.toRoute<NavOverviewScreen>()
+            OverviewScreen(navController, openDrawer, overviewState, overviewEvent, args.authorToSearch)
         }
         composable<NavAddScreen> {
             val args = it.toRoute<NavAddScreen>()
