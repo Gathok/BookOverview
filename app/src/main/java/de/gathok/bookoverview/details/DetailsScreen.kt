@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -67,6 +66,8 @@ import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (DetailsEvent) -> Unit,
                   bookId: Int?, testBook: Book? = null) {
 
+    val context = LocalContext.current
+
     LaunchedEffect (key1 = bookId) {
         onEvent(DetailsEvent.ResetState)
         if (bookId != null) {
@@ -78,17 +79,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
 
     LaunchedEffect (key1 = state.book) {
         if (state.book != null) {
-//            onEvent(DetailsEvent.TitleChanged(state.book.title))
-//            onEvent(DetailsEvent.AuthorChanged(state.book.author))
-//            onEvent(DetailsEvent.IsbnChanged(state.book.isbn))
-//            onEvent(DetailsEvent.PossessionStatusChanged(state.book.possessionStatus))
-//            onEvent(DetailsEvent.ReadStatusChanged(state.book.readStatus))
-//            onEvent(DetailsEvent.RatingChanged(state.book.rating ?: 0))
-//            onEvent(DetailsEvent.DescriptionChanged(state.book.description))
-//            onEvent(DetailsEvent.SeriesChanged(state.bookSeriesList.entries.find {
-//                it.value == state.book.bookSeriesId
-//            }?.key ?: ""))
-//            onEvent(DetailsEvent.ReadingTimeChanged(state.book.readingTime))
             onEvent(DetailsEvent.ChangeBook(state.book))
 
             if (state.book.isbn.length == 13 && state.book.isbn.startsWith("978")) {
@@ -103,6 +93,14 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                     // No cover image found
                 }
             }
+        }
+    }
+
+    val EDIT_ENABLED = stringResource(R.string.edit_enabled)
+
+    LaunchedEffect(state.isEditing) {
+        if (state.isEditing) {
+            Toast.makeText(context, EDIT_ENABLED, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -381,12 +379,19 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    if (state.isEditing) {
+                                .combinedClickable(
+                                    onClick = {
+                                        if (state.isEditing) {
+                                            curEditType = EditType.ISBN
+                                            showEditDialog = true
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                                         curEditType = EditType.ISBN
                                         showEditDialog = true
                                     }
-                                },
+                                ),
                         )
                     }
                     Row {
@@ -402,14 +407,21 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    if (state.isEditing) {
+                                .combinedClickable (
+                                    onClick = {
+                                        if (state.isEditing) {
+                                            curEditType = EditType.TITLE
+                                            showEditDialog = true
+                                        } else {
+                                            showFullTitle = !showFullTitle
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                                         curEditType = EditType.TITLE
                                         showEditDialog = true
-                                    } else {
-                                        showFullTitle = !showFullTitle
                                     }
-                                },
+                                ),
                         )
                     }
                     Row {
@@ -425,14 +437,21 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
-                                    if (state.isEditing) {
+                                .combinedClickable (
+                                    onClick = {
+                                        if (state.isEditing) {
+                                            curEditType = EditType.AUTHOR
+                                            showEditDialog = true
+                                        } else {
+                                            showFullAuthor = !showFullAuthor
+                                        }
+                                    },
+                                    onLongClick = {
+                                        if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                                         curEditType = EditType.AUTHOR
                                         showEditDialog = true
-                                    } else {
-                                        showFullAuthor = !showFullAuthor
                                     }
-                                }
+                                )
                         )
                     }
                     Row(
@@ -508,12 +527,19 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
-                    .clickable {
-                        if (state.isEditing) {
+                    .combinedClickable (
+                        onClick = {
+                            if (state.isEditing) {
+                                curEditType = EditType.READING_TIME
+                                showEditDialog = true
+                            }
+                        },
+                        onLongClick = {
+                            if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                             curEditType = EditType.READING_TIME
                             showEditDialog = true
                         }
-                    },
+                    ),
             ) {
                 Column {
                     Text(
@@ -541,12 +567,19 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
-                    .clickable {
-                        if (state.isEditing) {
+                    .combinedClickable (
+                        onClick = {
+                            if (state.isEditing) {
+                                curEditType = EditType.BOOK_SERIES
+                                showEditDialog = true
+                            }
+                        },
+                        onLongClick = {
+                            if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                             curEditType = EditType.BOOK_SERIES
                             showEditDialog = true
                         }
-                    },
+                    )
             ) {
                 Column {
                     Text(
@@ -570,12 +603,19 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp, start = 12.dp, end = 12.dp, bottom = 6.dp)
-                    .clickable {
-                        if (state.isEditing) {
+                    .combinedClickable (
+                        onClick = {
+                            if (state.isEditing) {
+                                curEditType = EditType.DESCRIPTION
+                                showEditDialog = true
+                            }
+                        },
+                        onLongClick = {
+                            if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
                             curEditType = EditType.DESCRIPTION
                             showEditDialog = true
                         }
-                    },
+                    )
             ) {
                 Column {
                     Text(
@@ -612,7 +652,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
 fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.4f) {
 
     val context = LocalContext.current
-    val text = stringResource(R.string.not_editing_desc)
     val description = if (state.possessionStatus) {
         stringResource(R.string.owned)
     } else {
@@ -629,23 +668,12 @@ fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWid
                     if (state.isEditing) {
                         onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
                     } else {
-                        Toast
-                            .makeText(
-                                context,
-                                text,
-                                Toast.LENGTH_SHORT
-                            )
-                            .show()
+                        Toast.makeText(context, description, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onLongClick = {
-                    Toast
-                        .makeText(
-                            context,
-                            description,
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
+                    if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
+                    onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
                 }
             ),
         tint = if (state.possessionStatus) {
@@ -660,7 +688,6 @@ fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWid
 fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.5f) {
 
     val context = LocalContext.current
-    val text = stringResource(R.string.not_editing_desc)
     val description = if (state.readStatus) {
         stringResource(R.string.read)
     } else {
@@ -677,23 +704,12 @@ fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Fl
                     if (state.isEditing) {
                         onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
                     } else {
-                        Toast
-                            .makeText(
-                                context,
-                                text,
-                                Toast.LENGTH_SHORT
-                            )
-                            .show()
+                        Toast.makeText(context, description, Toast.LENGTH_SHORT).show()
                     }
                 },
                 onLongClick = {
-                    Toast
-                        .makeText(
-                            context,
-                            description,
-                            Toast.LENGTH_SHORT
-                        )
-                        .show()
+                    if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
+                    onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
                 }
             )
             .padding(top = 6.dp, bottom = 6.dp),

@@ -88,4 +88,5 @@
     <string name="error_no_file_selected">Fehler: Keine Datei ausgewählt</string>
     <string name="no_file_selected">Keine Datei ausgewählt</string>
     <string name="file">Datei</string>
+    <string name="edit_enabled">Bearbeitung aktiviert</string>
 </resources>
