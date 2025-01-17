@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,9 +22,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.RemoveCircle
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -32,7 +33,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +56,8 @@ import de.gathok.bookoverview.add.RatingBar
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookSeries
+import de.gathok.bookoverview.ui.CustomAlertDialog
+import de.gathok.bookoverview.ui.CustomDialog
 import de.gathok.bookoverview.ui.Dropdown
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconRead
@@ -179,52 +181,31 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
         val NO_SERIES = stringResource(R.string.no_series)
 
         if (showConfirmLeaveDialog) {
-            AlertDialog(
+            CustomAlertDialog(
                 title = { Text(stringResource(R.string.error_save_changes)) },
                 text = { Text(stringResource(R.string.error_msg_save_changes)) },
                 onDismissRequest = { showConfirmLeaveDialog = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            if (state.title.isBlank()) {
-                                showConfirmLeaveDialog = false
-                                showNoTitleDialog = true
-                            } else {
-                                onEvent(DetailsEvent.UpdateBook)
-                                navController.popBackStack()
-                            }
-                        }
-                    ) {
-                        Text(text = stringResource(R.string.yes_save))
+                onConfirm = {
+                    if (state.title.isBlank()) {
+                        showConfirmLeaveDialog = false
+                        showNoTitleDialog = true
+                    } else {
+                        onEvent(DetailsEvent.UpdateBook)
+                        navController.popBackStack()
                     }
                 },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(R.string.no),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+                onDismiss = {
+                    navController.popBackStack()
                 }
             )
         }
 
         if (showNoTitleDialog) {
-            AlertDialog(
+            CustomAlertDialog(
                 title = { Text(text = stringResource(R.string.error)) },
                 text = { Text(text = stringResource(R.string.error_msg_no_title)) },
                 onDismissRequest = { showNoTitleDialog = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showNoTitleDialog = false }
-                    ) {
-                        Text(text = stringResource(R.string.ok))
-                    }
-                }
+                onConfirm = { showNoTitleDialog = false }
             )
         }
 
@@ -243,112 +224,110 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
                 }
             }
 
-            AlertDialog(
+            CustomDialog (
                 title = {
                     Text(text = stringResource(
                         id = R.string.edit_title,
                         stringResource(curEditType.getTitleStringId)
                     ))
                 },
-                text = {
-                    when (curEditType) {
-                        EditType.BOOK_SERIES -> {
+                onDismissRequest = { showEditDialog = false },
+                rightIcon = {
+                    Row {
+                        if (curEditType == EditType.READING_TIME) {
+                            Icon (
+                                imageVector = Icons.Default.RemoveCircle,
+                                contentDescription = "Subtract Time",
+                                modifier = Modifier
+                                    .padding(end = 6.dp)
+                                    .clickable {
+                                        onEvent(DetailsEvent.ReadingTimeChanged(
+                                            (state.readingTime ?: 0) - (tempString.toIntOrNull() ?: 0)
+                                        ))
+                                        showEditDialog = false
+                                    }
+                            )
+                        }
+                        Icon (
+                            imageVector = if (curEditType == EditType.READING_TIME) {
+                                Icons.Default.AddCircle
+                            } else {
+                                Icons.Default.Check
+                            },
+                            contentDescription = null,
+                            modifier = Modifier
+                                .clickable {
+                                    when (curEditType) {
+                                        EditType.TITLE -> onEvent(DetailsEvent.TitleChanged(tempString))
+                                        EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempString))
+                                        EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempString))
+                                        EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempString))
+                                        EditType.BOOK_SERIES -> onEvent(DetailsEvent.SeriesChanged(tempSeries))
+                                        EditType.READING_TIME -> onEvent(DetailsEvent.ReadingTimeChanged(
+                                            (state.readingTime ?: 0) + (tempString.toIntOrNull() ?: 0)
+                                        ))
+                                    }
+                                    showEditDialog = false
+                                }
+                        )
+                    }
+                },
+                leftIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        modifier = Modifier.combinedClickable(
+                            onClick = { showEditDialog = false }
+                        )
+                    )
+                }
+            ) {
+                when (curEditType) {
+                    EditType.BOOK_SERIES -> {
 //                            val options: Map<Any?, String> = state.bookSeriesList.associateBy({ it as BookSeries? }, { it.title })
 //                                .toMutableMap().apply { put(null, stringResource(R.string.no_series)) }.toMap()
 
-                            Dropdown(
-                                selectedOption = Pair(tempSeries, tempSeries?.title ?: NO_SERIES),
-                                options = state.bookSeriesList.associateBy({ it }, { it.title }),
-                                onValueChanged = { newSeries ->
-                                    tempSeries = newSeries as BookSeries
-                                },
-                                label = stringResource(R.string.new_series),
-                            )
-                        }
-                        EditType.READING_TIME -> {
-                            OutlinedTextField(
-                                value = tempString,
-                                onValueChange = { tempString = it },
-                                label = {
-                                    Text(
-                                        text = stringResource(
-                                            id = R.string.add_minutes,
-                                            stringResource(curEditType.getTitleStringId),
-                                        ),
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            )
-                        }
-                        else -> {
-                            OutlinedTextField(
-                                value = tempString,
-                                onValueChange = { tempString = it },
-                                label = {
-                                    Text(
-                                        text = stringResource(
-                                            id = R.string.new_label,
-                                            stringResource(curEditType.getTitleStringId)),
-                                    )
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                            )
-                        }
+                        Dropdown(
+                            selectedOption = Pair(tempSeries, tempSeries?.title ?: NO_SERIES),
+                            options = state.bookSeriesList.associateBy({ it }, { it.title }),
+                            onValueChanged = { newSeries ->
+                                tempSeries = newSeries as BookSeries
+                            },
+                            label = stringResource(R.string.new_series),
+                        )
                     }
-                },
-                onDismissRequest = { showEditDialog = false },
-                confirmButton = {
-                    Row {
-                        if (curEditType == EditType.READING_TIME) {
-                            TextButton(
-                                onClick = {
-                                    onEvent(DetailsEvent.ReadingTimeChanged(
-                                        (state.readingTime ?: 0) - (tempString.toIntOrNull() ?: 0)
-                                    ))
-                                    showEditDialog = false
-                                }
-                            ) {
-                                Icon (
-                                    imageVector = Icons.Default.RemoveCircle,
-                                    contentDescription = "Subtract Time"
+                    EditType.READING_TIME -> {
+                        OutlinedTextField(
+                            value = tempString,
+                            onValueChange = { tempString = it },
+                            label = {
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.add_minutes,
+                                        stringResource(curEditType.getTitleStringId),
+                                    ),
                                 )
-                            }
-                        }
-                        TextButton (
-                            onClick = {
-                                when (curEditType) {
-                                    EditType.TITLE -> onEvent(DetailsEvent.TitleChanged(tempString))
-                                    EditType.AUTHOR -> onEvent(DetailsEvent.AuthorChanged(tempString))
-                                    EditType.ISBN -> onEvent(DetailsEvent.IsbnChanged(tempString))
-                                    EditType.DESCRIPTION -> onEvent(DetailsEvent.DescriptionChanged(tempString))
-                                    EditType.BOOK_SERIES -> onEvent(DetailsEvent.SeriesChanged(tempSeries))
-                                    EditType.READING_TIME -> onEvent(DetailsEvent.ReadingTimeChanged(
-                                        (state.readingTime ?: 0) + (tempString.toIntOrNull() ?: 0)
-                                    ))
-                                }
-                                showEditDialog = false
-                            }
-                        ) {
-                            if (curEditType != EditType.READING_TIME) {
-                                Text(text = stringResource(R.string.ok))
-                            } else {
-                                Icon (
-                                    imageVector = Icons.Default.AddCircle,
-                                    contentDescription = "Add Time"
-                                )
-                            }
-                        }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        )
                     }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = { showEditDialog = false }
-                    ) {
-                        Text(text = stringResource(R.string.cancel))
+                    else -> {
+                        OutlinedTextField(
+                            value = tempString,
+                            onValueChange = { tempString = it },
+                            label = {
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.new_label,
+                                        stringResource(curEditType.getTitleStringId)),
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
                 }
-            )
+            }
         }
 
         Column(

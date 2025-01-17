@@ -17,7 +17,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.RestoreFromTrash
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -25,7 +27,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +41,7 @@ import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.settings.SettingsEvent
 import de.gathok.bookoverview.settings.SettingsState
+import de.gathok.bookoverview.ui.CustomDialog
 import de.gathok.bookoverview.ui.customIconDeleteForever
 import de.gathok.bookoverview.ui.customIconRestoreFromTrash
 
@@ -90,79 +92,85 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
             )
         },
     ) { pad ->
-
         if (showDialog && currentBook != null) {
-            AlertDialog(
+            CustomDialog(
                 onDismissRequest = { showDialog = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onEvent(SettingsEvent.OnTrashRestoreClicked(currentBook!!))
-                            showDialog = false
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.restore),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                rightIcon = {
+                    Icon(
+                        imageVector = Icons.Default.RestoreFromTrash,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clickable {
+                                onEvent(SettingsEvent.OnTrashRestoreClicked(currentBook!!))
+                                showDialog = false
+                            }
+                    )
+                    Icon(
+                        imageVector = Icons.Default.DeleteForever,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier
+                            .clickable {
+                                onEvent(SettingsEvent.OnTrashDeleteClicked(currentBook!!))
+                                showDialog = false
+                            }
+                    )
                 },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            onEvent(SettingsEvent.OnTrashDeleteClicked(currentBook!!))
-                            showDialog = false
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.delete),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+                leftIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable { showDialog = false }
+                    )
                 },
                 title = {
                     Text(stringResource(id = R.string.restore_or_delete))
-                },
-                text = {
+                }
+            ) {
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
                     Text(stringResource(id = R.string.restore_or_delete_desc, currentBook!!.title))
-                },
-            )
+                }
+            }
         }
 
         if (showConfirmDialog) {
-            AlertDialog(
+            CustomDialog(
                 onDismissRequest = { showConfirmDialog = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            when (confirmType) {
-                                TrashConfirmType.DELETE_ALL -> onEvent(SettingsEvent.OnTrashDeleteAllClicked)
-                                TrashConfirmType.RESTORE_ALL -> onEvent(SettingsEvent.OnTrashRestoreAllClicked)
+                rightIcon = {
+                    Icon(
+                        imageVector = when (confirmType) {
+                            TrashConfirmType.DELETE_ALL -> Icons.Default.DeleteForever
+                            TrashConfirmType.RESTORE_ALL -> Icons.Default.RestoreFromTrash
+                        },
+                        contentDescription = null,
+                        tint = when (confirmType) {
+                            TrashConfirmType.DELETE_ALL -> MaterialTheme.colorScheme.error
+                            TrashConfirmType.RESTORE_ALL -> MaterialTheme.colorScheme.primary
+                        },
+                        modifier = Modifier
+                            .clickable {
+                                when (confirmType) {
+                                    TrashConfirmType.DELETE_ALL -> onEvent(SettingsEvent.OnTrashDeleteAllClicked)
+                                    TrashConfirmType.RESTORE_ALL -> onEvent(SettingsEvent.OnTrashRestoreAllClicked)
+                                }
+                                showConfirmDialog = false
                             }
-                            showConfirmDialog = false
-                        }
-                    ) {
-                        Text(
-                            text = when (confirmType) {
-                                TrashConfirmType.DELETE_ALL ->
-                                    "${stringResource(R.string.yes)}, ${stringResource(R.string.delete_all)}"
-                                TrashConfirmType.RESTORE_ALL ->
-                                    "${stringResource(R.string.yes)}, ${stringResource(R.string.restore_all)}"
-                            }
-                        )
-                    }
+                    )
                 },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showConfirmDialog = false
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.cancel),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+                leftIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clickable {
+                                showConfirmDialog = false
+                            }
+                    )
                 },
                 title = {
                     Text(
@@ -172,15 +180,19 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                         }
                     )
                 },
-                text = {
+            ) {
+                Row (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
                     Text(
                         text = when (confirmType) {
                             TrashConfirmType.DELETE_ALL -> stringResource(id = R.string.delete_all_desc)
                             TrashConfirmType.RESTORE_ALL -> stringResource(id = R.string.restore_all_desc)
                         }
                     )
-                },
-            )
+                }
+            }
         }
 
         Column (

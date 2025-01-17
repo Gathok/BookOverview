@@ -26,12 +26,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -50,7 +50,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -71,9 +70,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavController
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.data.Book
+import de.gathok.bookoverview.ui.CustomDialog
 import de.gathok.bookoverview.ui.CustomTopBar
 import de.gathok.bookoverview.ui.customIconBook
 import de.gathok.bookoverview.ui.customIconFilterList
@@ -438,69 +439,76 @@ fun FilterDialog(
     filterStates: List<Boolean?>,
     typeStates: List<String>
 ) {
-    AlertDialog(
+    CustomDialog (
         onDismissRequest = {  },
         title = { Text(stringResource(id = R.string.filter_options)) },
-        text = {
-            Column {
-                filterItemsList.forEach { item ->
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = item,
-                            fontSize = 16.sp
-                        )
-                        TripleSwitch(
-                            onSelectionChange = { text ->
-                                onFilterChange(filterItemsList.indexOf(item), when (text.trim()) {
+        rightIcon = {
+            Icon(
+                imageVector = Icons.Default.Check,
+                contentDescription = null,
+                modifier = Modifier.clickable {
+                    onPositiveClick()
+                }
+            )
+        },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Column {
+            filterItemsList.forEach { item ->
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = item,
+                        fontSize = 16.sp
+                    )
+                    TripleSwitch(
+                        onSelectionChange = { text ->
+                            onFilterChange(
+                                filterItemsList.indexOf(item), when (text.trim()) {
                                     "+" -> true
                                     "o" -> null
                                     "-" -> false
                                     else -> null
-                                })
-                            },
-                            curState = when (filterStates[filterItemsList.indexOf(item)]) {
-                                true -> " + "
-                                false -> " - "
-                                else -> " o "
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(4.dp))
+                                }
+                            )
+                        },
+                        curState = when (filterStates[filterItemsList.indexOf(item)]) {
+                            true -> " + "
+                            false -> " - "
+                            else -> " o "
+                        }
+                    )
                 }
-                typeItemsList.forEach { (label, options) ->
-                    var selectedOption by remember {
-                        mutableStateOf(typeStates[typeItemsList.keys.indexOf(label)])
-                    }
-
-                    Row(
-                        Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        DynamicSelectTextField(
-                            selectedOption = selectedOption,
-                            options = options,
-                            label = label,
-                            onValueChanged = { text ->
-                                selectedOption = text
-                                onTypeChange(typeItemsList.keys.indexOf(label), options.indexOf(text))
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.padding(4.dp))
-                }
+                Spacer(modifier = Modifier.padding(4.dp))
             }
-        },
-        confirmButton = {
-            TextButton(onClick = {
-                onPositiveClick()
-            }) {
-                Text(stringResource(id = R.string.ok))
+            typeItemsList.forEach { (label, options) ->
+                var selectedOption by remember {
+                    mutableStateOf(typeStates[typeItemsList.keys.indexOf(label)])
+                }
+
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    DynamicSelectTextField(
+                        selectedOption = selectedOption,
+                        options = options,
+                        label = label,
+                        onValueChanged = { text ->
+                            selectedOption = text
+                            onTypeChange(typeItemsList.keys.indexOf(label), options.indexOf(text))
+                        }
+                    )
+                }
+                Spacer(modifier = Modifier.padding(4.dp))
             }
         }
-    )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -116,30 +116,30 @@ class SettingsViewModel (
             }
         }
     }
-}
 
-fun readCsv(content: String): List<Book> {
-    val lines = content.split("\n")
-    val books = mutableListOf<Book>()
+    private fun readCsv(content: String): List<Book> {
+        val lines = content.split("\n")
+        val books = mutableListOf<Book>()
 
-    for (line in lines.subList(1, lines.size - 1)) {
-        val values = line.substring(1, line.length - 1).split("\",\"")
+        for (line in lines.subList(1, lines.size - 1)) {
+            val values = line.substring(1, line.length - 1).split("\",\"")
 
-        if (values.size == 10) {
-            val book = Book(
-                title = values[0],
-                author = values[1],
-                isbn = values[2],
-                possessionStatus = values[3].toBoolean(),
-                readStatus = values[4].toBoolean(),
-                rating = values[5].toIntOrNull(),
-                description = values[6],
-                deletedSince = values[7].toLong(),
-                bookSeriesId = null,
-                readingTime = values[9].toIntOrNull()
-            )
-            books.add(book)
+            if (values.size == 10) {
+                val book = Book(
+                    title = values[0],
+                    author = values[1],
+                    isbn = values[2],
+                    possessionStatus = values[3].toBoolean(),
+                    readStatus = values[4].toBoolean(),
+                    rating = values[5].toIntOrNull(),
+                    description = values[6],
+                    deletedSince = values[7].toLong(),
+                    bookSeriesId = null,
+                    readingTime = values[9].toIntOrNull()
+                )
+                books.add(book)
+            }
         }
+        return books
     }
-    return books
 }

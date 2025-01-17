@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,7 +36,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +56,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.data.BookSeries
+import de.gathok.bookoverview.ui.CustomAlertDialog
 import de.gathok.bookoverview.ui.Dropdown
 import de.gathok.bookoverview.ui.customIconBarcodeScanner
 import de.gathok.bookoverview.util.NavAddScreen
@@ -142,40 +141,28 @@ fun AddScreen(navController: NavController, state: AddState, onEvent: (AddEvent)
         val scrollState = rememberScrollState()
 
         if (showError) {
-            AlertDialog(
+            CustomAlertDialog(
                 onDismissRequest = {
                     showError = false
                 },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showError = false }
-                    ) {
-                        Text(stringResource(R.string.ok))
-                    }
+                onConfirm = {
+                    showError = false
                 },
+                noConfirmButton = true,
                 title = { Text(stringResource(id = errorTitleResource)) },
-                text = { Text(stringResource(id = errorMessageResource)) }
+                text = { Text(stringResource(id = errorMessageResource)) },
             )
         }
 
         if (showIncompleteError) {
-            AlertDialog(
+            CustomAlertDialog(
                 onDismissRequest = {
                     showIncompleteError = false
                 },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showIncompleteError = false
-                        onEvent(AddEvent.AddBook)
-                        navController.navigate(NavOverviewScreen())
-                    }) {
-                        Text(stringResource(R.string.yes))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showIncompleteError = false }) {
-                        Text(stringResource(R.string.no))
-                    }
+                onConfirm = {
+                    showIncompleteError = false
+                    onEvent(AddEvent.AddBook)
+                    navController.navigate(NavOverviewScreen())
                 },
                 title = { Text(stringResource(id = R.string.data_incomplete)) },
                 text = { Text(stringResource(id = R.string.error_msg_add_incomplete)) }
