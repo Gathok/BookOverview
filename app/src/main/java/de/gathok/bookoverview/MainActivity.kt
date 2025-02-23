@@ -13,7 +13,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -188,7 +192,8 @@ class MainActivity : ComponentActivity() {
                                         .padding(NavigationDrawerItemDefaults.ItemPadding),
                                     icon = {
                                         Icon(
-                                            imageVector = Icons.Default.Book,
+                                            imageVector = if (state.selectedScreen == Screen.Overview) Icons.Default.Book
+                                                else Icons.Outlined.Book,
                                             contentDescription = "Book Overview"
                                         )
                                     },
@@ -207,8 +212,9 @@ class MainActivity : ComponentActivity() {
                                         .padding(NavigationDrawerItemDefaults.ItemPadding),
                                     icon = {
                                         Icon(
-                                            imageVector = Icons.Default.Book,
-                                            contentDescription = "Book Overview"
+                                            imageVector = if (state.selectedScreen == Screen.SeriesOverview) Icons.Default.CollectionsBookmark
+                                                else Icons.Outlined.CollectionsBookmark,
+                                            contentDescription = "Book Series Overview"
                                         )
                                     },
                                 )
@@ -227,7 +233,8 @@ class MainActivity : ComponentActivity() {
                                         .padding(NavigationDrawerItemDefaults.ItemPadding),
                                     icon = {
                                         Icon(
-                                            imageVector = Icons.Default.Settings,
+                                            imageVector = if (state.selectedScreen == Screen.Settings) Icons.Default.Settings
+                                                else Icons.Outlined.Settings,
                                             contentDescription = "Settings"
                                         )
                                     },
