@@ -1,4 +1,4 @@
-package de.gathok.bookoverview.overview
+package de.gathok.bookoverview.overview.util
 
 enum class SortType {
     TITLE,

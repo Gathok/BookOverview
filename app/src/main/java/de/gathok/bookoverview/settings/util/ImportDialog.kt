@@ -1,4 +1,4 @@
-package de.gathok.bookoverview.settings.import
+package de.gathok.bookoverview.settings.util
 
 import android.app.Activity
 import android.content.Intent

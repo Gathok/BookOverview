@@ -52,15 +52,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import de.gathok.bookoverview.R
-import de.gathok.bookoverview.add.RatingBar
+import de.gathok.bookoverview.add.util.RatingBar
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.data.BookSeries
+import de.gathok.bookoverview.details.util.PossessionIcon
+import de.gathok.bookoverview.details.util.ReadIcon
 import de.gathok.bookoverview.ui.CustomAlertDialog
 import de.gathok.bookoverview.ui.CustomDialog
 import de.gathok.bookoverview.ui.Dropdown
-import de.gathok.bookoverview.ui.customIconBook
-import de.gathok.bookoverview.ui.customIconRead
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 import de.gathok.bookoverview.util.NavOverviewScreen
 
@@ -624,79 +624,6 @@ fun DetailsScreen(navController: NavController, state: DetailsState, onEvent: (D
             }
         }
     }
-}
-
-@Composable
-fun PossessionIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.4f) {
-
-    val context = LocalContext.current
-    val description = if (state.possessionStatus) {
-        stringResource(R.string.owned)
-    } else {
-        stringResource(R.string.not_owned)
-    }
-
-    Icon(
-        imageVector = customIconBook(),
-        contentDescription = stringResource(R.string.owned),
-        modifier = Modifier
-            .fillMaxWidth(fillWidth)
-            .combinedClickable(
-                onClick = {
-                    if (state.isEditing) {
-                        onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
-                    } else {
-                        Toast.makeText(context, description, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                onLongClick = {
-                    if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
-                    onEvent(DetailsEvent.PossessionStatusChanged(!state.possessionStatus))
-                }
-            ),
-        tint = if (state.possessionStatus) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-        }
-    )
-}
-
-@Composable
-fun ReadIcon(state: DetailsState, onEvent: (DetailsEvent) -> Unit, fillWidth: Float = 0.5f) {
-
-    val context = LocalContext.current
-    val description = if (state.readStatus) {
-        stringResource(R.string.read)
-    } else {
-        stringResource(R.string.not_read)
-    }
-
-    Icon(
-        imageVector = customIconRead(),
-        contentDescription = stringResource(R.string.read),
-        modifier = Modifier
-            .fillMaxWidth(fillWidth)
-            .combinedClickable(
-                onClick = {
-                    if (state.isEditing) {
-                        onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
-                    } else {
-                        Toast.makeText(context, description, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                onLongClick = {
-                    if (!state.isEditing) onEvent(DetailsEvent.SwitchEditing)
-                    onEvent(DetailsEvent.ReadStatusChanged(!state.readStatus))
-                }
-            )
-            .padding(top = 6.dp, bottom = 6.dp),
-        tint = if (state.readStatus) {
-            MaterialTheme.colorScheme.primary
-        } else {
-            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-        },
-    )
 }
 
 fun formatReadingTime(readingTime: Int?): String {

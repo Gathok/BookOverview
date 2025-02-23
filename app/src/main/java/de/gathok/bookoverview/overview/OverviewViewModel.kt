@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.sqlite.db.SimpleSQLiteQuery
 import de.gathok.bookoverview.data.BookDao
+import de.gathok.bookoverview.overview.util.SearchType
+import de.gathok.bookoverview.overview.util.SortType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,29 +44,49 @@ class OverviewViewModel (
             val readStatus = filters[1] as Boolean?
             val sortType = (filters[2] as SortType).queryValue
             val searchQuery = filters[3] as String
-            val searchType = (filters[4] as SearchType).queryValue
 
-            val query = SimpleSQLiteQuery(
-                "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
-                        " AND (:isRead IS NULL OR readStatus = :isRead)" +
-                        " AND $searchType LIKE '%' || :searchQuery || '%'" +
-                        " AND deletedSince = 0" +
-                        " ORDER BY $sortType COLLATE NOCASE ASC",
-                arrayOf(possessionStatus, readStatus, searchQuery)
-            )
-
+            val query = if (_searchType.value == SearchType.Series) {
+                SimpleSQLiteQuery(
+                    "SELECT book.* FROM book LEFT JOIN bookseries ON book.bookSeriesId = bookseries.id " +
+                            "WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+                            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+                            " AND bookseries.title LIKE '%' || :searchQuery || '%'" +
+                            " AND deletedSince = 0" +
+                            " ORDER BY $sortType COLLATE NOCASE ASC",
+                    arrayOf(possessionStatus, readStatus, searchQuery)
+                )
+            } else if (_searchType.value == SearchType.SeriesId) {
+                SimpleSQLiteQuery(
+                    "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+                            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+                            " AND ${_searchType.value.queryValue} = :searchQuery" +
+                            " AND deletedSince = 0" +
+                            " ORDER BY $sortType COLLATE NOCASE ASC",
+                    arrayOf(possessionStatus, readStatus, searchQuery)
+                )
+            } else {
+                SimpleSQLiteQuery(
+                    "SELECT * FROM book WHERE (:isOwned IS NULL OR possessionStatus = :isOwned)" +
+                            " AND (:isRead IS NULL OR readStatus = :isRead)" +
+                            " AND ${_searchType.value.queryValue} LIKE '%' || :searchQuery || '%'" +
+                            " AND deletedSince = 0" +
+                            " ORDER BY $sortType COLLATE NOCASE ASC",
+                    arrayOf(possessionStatus, readStatus, searchQuery)
+                )
+            }
             dao.bookRawQuery(query)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
     private val _state = MutableStateFlow(OverviewState())
     val state = combine(_state, _books) { state, books ->
-            state.copy(
-                books = books,
-                sortType = _sortType.value,
-                searchType = _searchType.value,
-                possessionStatus = _filterPossessionStatus.value,
-                readStatus = _filterReadStatus.value
-            )
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), OverviewState())
+        state.copy(
+            books = books,
+            sortType = _sortType.value,
+            searchType = _searchType.value,
+            possessionStatus = _filterPossessionStatus.value,
+            readStatus = _filterReadStatus.value
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), OverviewState())
 
     fun onEvent(event: OverviewEvent) {
         when (event) {
@@ -73,6 +95,12 @@ class OverviewViewModel (
                 _filterReadStatus.value = event.readStatus
                 _sortType.value = event.sortType
                 _searchType.value = event.searchType
+            }
+            is OverviewEvent.ResetFilter -> {
+                _filterPossessionStatus.value = null
+                _filterReadStatus.value = null
+                _sortType.value = SortType.TITLE
+                _searchType.value = SearchType.TITLE
             }
             is OverviewEvent.DeleteBook -> {
                 viewModelScope.launch {

@@ -2,16 +2,11 @@
 
 package de.gathok.bookoverview.add
 
-import android.widget.Toast
 import androidx.camera.core.ExperimentalGetImage
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,9 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -54,6 +46,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
+import de.gathok.bookoverview.add.util.RatingBar
 import de.gathok.bookoverview.api.BookModel
 import de.gathok.bookoverview.data.BookSeries
 import de.gathok.bookoverview.ui.CustomAlertDialog
@@ -334,76 +327,6 @@ private suspend fun completeWithIsbn(
     }
     //return list of errorTitleResource, errorMessageResource, showError
     return Triple(errorTitleResource, errorMessageResource, showError)
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun RatingBar(
-    max: Int = 5,
-    current: Int,
-    onRatingChanged: (Int) -> Unit,
-    enabled: Boolean = true,
-    changed: Boolean = false,
-    showText: Boolean = true,
-    activeColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.tertiary,
-    inactiveColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-) {
-
-    val notEditingToast = Toast.makeText(
-        LocalContext.current,
-        stringResource(id = R.string.not_editing_desc),
-        Toast.LENGTH_SHORT
-    )
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            for (i in 1..max) {
-                Icon(
-                    imageVector = if (i <= current) Icons.Filled.Star else Icons.Outlined.Star,
-                    contentDescription = "${stringResource(R.string.rating)}: $i",
-                    modifier = Modifier
-                        .combinedClickable(
-                            onClick = {
-                                if (enabled) {
-                                    onRatingChanged(i)
-                                } else {
-                                    notEditingToast.show()
-                                }
-                            },
-                            onLongClick = {
-                                if (enabled) {
-                                    onRatingChanged(0)
-                                } else {
-                                    notEditingToast.show()
-                                }
-                            }
-                        )
-                        .padding(horizontal = 4.dp)
-                        .weight(1f) // This will divide the available space equally between the stars
-                        .aspectRatio(1f), // This will make the stars square
-                    tint =
-                        if (i <= current) activeColor
-                        else inactiveColor,
-                )
-            }
-        }
-        if (showText) {
-            Row {
-                Text(
-                    text = when(current) {
-                        0 -> stringResource(R.string.no_rating)
-                        else -> "${stringResource(R.string.rating)}: $current★"
-                    } + if (changed) "*" else "",
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
-        }
-    }
 }
 
 /* RIP BookSeriesDropDown

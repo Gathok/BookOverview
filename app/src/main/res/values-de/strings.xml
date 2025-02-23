@@ -91,4 +91,5 @@
     <string name="edit_enabled">Bearbeitung aktiviert</string>
     <string name="edit_series">Serie bearbeiten</string>
     <string name="no_description">Keine Beschreibung</string>
+    <string name="series">Serie</string>
 </resources>

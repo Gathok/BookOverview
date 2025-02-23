@@ -93,4 +93,7 @@
     <string name="edit_enabled">Editing enabled</string>
     <string name="edit_series">Edit Series</string>
     <string name="no_description">No description</string>
+    <string name="series">Series</string>
+    <string name="series_id">Series Id</string>
+    <string name="filter_reset">Filter reset</string>
 </resources>

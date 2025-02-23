@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package de.gathok.bookoverview.settings.trash
+package de.gathok.bookoverview.settings.util
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,8 +42,6 @@ import de.gathok.bookoverview.data.Book
 import de.gathok.bookoverview.settings.SettingsEvent
 import de.gathok.bookoverview.settings.SettingsState
 import de.gathok.bookoverview.ui.CustomDialog
-import de.gathok.bookoverview.ui.customIconDeleteForever
-import de.gathok.bookoverview.ui.customIconRestoreFromTrash
 
 @Composable
 fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (SettingsEvent) -> Unit) {
@@ -75,7 +73,7 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                         showConfirmDialog = true
                     }) {
                         Icon(
-                            imageVector = customIconRestoreFromTrash(),
+                            imageVector = Icons.Default.RestoreFromTrash,
                             contentDescription = stringResource(id = R.string.restore_all)
                         )
                     }
@@ -84,7 +82,7 @@ fun TrashScreen(navController: NavController, state: SettingsState, onEvent: (Se
                         showConfirmDialog = true
                     }) {
                         Icon(
-                            imageVector = customIconDeleteForever(),
+                            imageVector = Icons.Default.DeleteForever,
                             contentDescription = stringResource(id = R.string.delete_all)
                         )
                     }
@@ -267,7 +265,7 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Icon(
-                imageVector = customIconRestoreFromTrash(),
+                imageVector = Icons.Default.RestoreFromTrash,
                 contentDescription = stringResource(id = R.string.restore),
                 modifier = Modifier
                     .clickable { onRestore() }
@@ -275,7 +273,7 @@ fun TrashedBookItem(book: Book, onClick: () -> Unit, onRestore: () -> Unit, onDe
                 tint = MaterialTheme.colorScheme.primary
             )
             Icon(
-                imageVector = customIconDeleteForever(),
+                imageVector = Icons.Default.DeleteForever,
                 contentDescription = stringResource(id = R.string.delete),
                 modifier = Modifier
                     .clickable { onDelete() }

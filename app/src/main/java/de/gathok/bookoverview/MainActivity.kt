@@ -72,7 +72,7 @@ import de.gathok.bookoverview.settings.SettingsEvent
 import de.gathok.bookoverview.settings.SettingsScreen
 import de.gathok.bookoverview.settings.SettingsState
 import de.gathok.bookoverview.settings.SettingsViewModel
-import de.gathok.bookoverview.settings.trash.TrashScreen
+import de.gathok.bookoverview.settings.util.TrashScreen
 import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 import de.gathok.bookoverview.util.NavAddScreen
 import de.gathok.bookoverview.util.NavDetailsScreen
@@ -104,6 +104,7 @@ class MainActivity : ComponentActivity() {
             .addMigrations(MIGRATION_4_5)
             .build()
     }
+    private val mainViewModel by viewModels<MainViewModel>()
     private val overviewViewModel by viewModels<OverviewViewModel>(
         factoryProducer = {
             object : ViewModelProvider.Factory {
@@ -156,11 +157,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             BookOverviewTheme {
+                val state by mainViewModel.state.collectAsState()
+                
                 val scope = rememberCoroutineScope()
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
                 val navController = rememberNavController()
-                val selectedScreen = remember { mutableStateOf(Screen.Overview) }
 
                 Surface(
                     modifier = Modifier
@@ -174,9 +176,9 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 NavigationDrawerItem (
                                     label = { Text("Book Overview") },
-                                    selected = selectedScreen.value == Screen.Overview,
+                                    selected = state.selectedScreen == Screen.Overview,
                                     onClick = {
-                                        selectedScreen.value = Screen.Overview
+                                        mainViewModel.setSelectedScreen(Screen.Overview)
                                         navController.navigate(NavOverviewScreen())
                                         scope.launch {
                                             drawerState.close()
@@ -193,9 +195,9 @@ class MainActivity : ComponentActivity() {
                                 )
                                 NavigationDrawerItem (
                                     label = { Text("Book Series") },
-                                    selected = selectedScreen.value == Screen.SeriesOverview,
+                                    selected = state.selectedScreen == Screen.SeriesOverview,
                                     onClick = {
-                                        selectedScreen.value = Screen.SeriesOverview
+                                        mainViewModel.setSelectedScreen(Screen.SeriesOverview)
                                         navController.navigate(NavSeriesOverviewScreen)
                                         scope.launch {
                                             drawerState.close()
@@ -213,9 +215,9 @@ class MainActivity : ComponentActivity() {
                                 Spacer(modifier = Modifier.weight(1f))
                                 NavigationDrawerItem (
                                     label = { Text("Settings") },
-                                    selected = selectedScreen.value == Screen.Settings,
+                                    selected = state.selectedScreen == Screen.Settings,
                                     onClick = {
-                                        selectedScreen.value = Screen.Settings
+                                        mainViewModel.setSelectedScreen(Screen.Settings)
                                         navController.navigate(NavSettingsScreen)
                                         scope.launch {
                                             drawerState.close()
@@ -241,6 +243,7 @@ class MainActivity : ComponentActivity() {
 
                         NavGraph(
                             navController, { scope.launch { drawerState.open() } },
+                            mainViewModel,
                             overviewState, overviewViewModel::onEvent,
                             addState, addViewModel::onEvent,
                             detailsState, detailsViewModel::onEvent,
@@ -255,7 +258,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NavGraph(navController: NavHostController, openDrawer: () -> Unit,
+fun NavGraph(navController: NavHostController, openDrawer: () -> Unit, mainViewModel: MainViewModel,
              overviewState: OverviewState, overviewEvent: (OverviewEvent) -> Unit,
              addState: AddState, addEvent: (AddEvent) -> Unit,
              detailsState: DetailsState, detailsEvent: (DetailsEvent) -> Unit,
@@ -268,7 +271,8 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit,
     ) {
         composable<NavOverviewScreen> {
             val args = it.toRoute<NavOverviewScreen>()
-            OverviewScreen(navController, openDrawer, overviewState, overviewEvent, args.authorToSearch)
+            OverviewScreen(navController, openDrawer, overviewState, overviewEvent, args.authorToSearch, args.seriesToSearch)
+            mainViewModel.setSelectedScreen(Screen.Overview)
         }
         composable<NavAddScreen> {
             val args = it.toRoute<NavAddScreen>()
@@ -283,12 +287,14 @@ fun NavGraph(navController: NavHostController, openDrawer: () -> Unit,
         }
         composable<NavSettingsScreen> {
             SettingsScreen(navController, openDrawer, settingsState, settingsEvent)
+            mainViewModel.setSelectedScreen(Screen.Settings)
         }
         composable<NavTrashScreen> {
             TrashScreen(navController, settingsState, settingsEvent)
         }
         composable<NavSeriesOverviewScreen> {
             SeriesOverviewScreen(navController, openDrawer, seriesOverviewState, seriesOverviewEvent)
+            mainViewModel.setSelectedScreen(Screen.SeriesOverview)
         }
     }
 }

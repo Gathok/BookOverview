@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.FlashlightOff
+import androidx.compose.material.icons.filled.FlashlightOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,8 +44,6 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import de.gathok.bookoverview.R
-import de.gathok.bookoverview.ui.customIconFlashlightOff
-import de.gathok.bookoverview.ui.customIconFlashlightOn
 import de.gathok.bookoverview.util.NavAddScreen
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -110,7 +110,7 @@ fun ScannerScreen(navController: NavController? = null) {
                         }
                     ) {
                         Icon(
-                            imageVector = if (flashOn) customIconFlashlightOn() else customIconFlashlightOff(),
+                            imageVector = if (flashOn) Icons.Default.FlashlightOff else Icons.Default.FlashlightOn,
                             contentDescription = "Flashlight"
                         )
                     }
