@@ -44,9 +44,14 @@ class SeriesOverviewViewModel (
             is SeriesOverviewEvent.SearchQueryChanged -> {
                 _searchQuery.value = event.searchQuery
             }
-            is SeriesOverviewEvent.AddSeries -> {
+            is SeriesOverviewEvent.SubmitSeries -> {
                 viewModelScope.launch {
                     dao.upsertBookSeries(event.series)
+                }
+            }
+            is SeriesOverviewEvent.DeleteSeries -> {
+                viewModelScope.launch {
+                    dao.deleteBookSeries(event.series)
                 }
             }
         }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
@@ -33,16 +34,23 @@ import de.gathok.bookoverview.ui.theme.BookOverviewTheme
 fun SeriesDialog(
     onDismiss: () -> Unit,
     onAdd: (BookSeries) -> Unit,
+    seriesToEdit: BookSeries? = null,
     invalidNames: List<String> = listOf(stringResource(R.string.no_series)),
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
+    if (seriesToEdit != null) {
+        title = seriesToEdit.title
+        description = seriesToEdit.description
+    }
+
     CustomDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = stringResource(R.string.add_series),
+                text = if (seriesToEdit != null) stringResource(R.string.edit_series)
+                    else stringResource(R.string.add_series),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -58,14 +66,30 @@ fun SeriesDialog(
         },
         rightIcon = {
             Icon(
-                imageVector = Icons.Default.AddCircle,
+                imageVector = if (seriesToEdit != null) Icons.Default.Check
+                    else Icons.Default.AddCircle,
                 contentDescription = "Close",
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = if (!invalidNames.contains(title.trim())) MaterialTheme.colorScheme.onSurface
+                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
                 modifier = Modifier.clickable {
-                    onAdd(BookSeries(
-                        title = title,
-                        description = description
-                    ))
+                    if (!invalidNames.contains(title.trim())) {
+                        if (seriesToEdit != null) {
+                            onAdd(
+                                BookSeries(
+                                    id = seriesToEdit.id,
+                                    title = title,
+                                    description = description
+                                )
+                            )
+                        } else {
+                            onAdd(
+                                BookSeries(
+                                    title = title,
+                                    description = description
+                                )
+                            )
+                        }
+                    }
                 }
             )
         }

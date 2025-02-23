@@ -89,4 +89,6 @@
     <string name="no_file_selected">Keine Datei ausgewählt</string>
     <string name="file">Datei</string>
     <string name="edit_enabled">Bearbeitung aktiviert</string>
+    <string name="edit_series">Serie bearbeiten</string>
+    <string name="no_description">Keine Beschreibung</string>
 </resources>

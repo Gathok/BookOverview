@@ -28,8 +28,6 @@ fun ActionIcon(
             imageVector = icon,
             contentDescription = contentDescription,
             tint = tint,
-            modifier = Modifier
-                .fillMaxHeight()
         )
     }
 }

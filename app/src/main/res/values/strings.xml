@@ -91,4 +91,6 @@
     <string name="no_file_selected">No file selected</string>
     <string name="file">File</string>
     <string name="edit_enabled">Editing enabled</string>
+    <string name="edit_series">Edit Series</string>
+    <string name="no_description">No description</string>
 </resources>

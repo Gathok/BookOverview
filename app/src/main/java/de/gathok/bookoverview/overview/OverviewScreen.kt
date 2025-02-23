@@ -87,6 +87,7 @@ import de.gathok.bookoverview.util.NavScannerScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun OverviewScreen(
@@ -316,17 +317,17 @@ fun OverviewScreen(
                                 ) {
                                     BookItem(book)
                                 }
-                                Row (
-                                    modifier = Modifier
-                                        .background(MaterialTheme.colorScheme.background)
-                                ) {
-                                    Spacer(modifier = Modifier
-                                        .height(2.dp)
-                                        .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
-                                    )
-                                }
                             }
+                        }
+                        Row (
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.background)
+                        ) {
+                            Spacer(modifier = Modifier
+                                .height(2.dp)
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.15f)),
+                            )
                         }
                     }
                     item {

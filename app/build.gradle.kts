@@ -14,8 +14,8 @@ android {
         applicationId = "de.gathok.bookoverview"
         minSdk = 34
         targetSdk = 34
-        versionCode = 3412045
-        versionName = "0.4-pre5"
+        versionCode = 3412049
+        versionName = "0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
