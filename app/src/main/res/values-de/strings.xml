@@ -92,4 +92,6 @@
     <string name="edit_series">Serie bearbeiten</string>
     <string name="no_description">Keine Beschreibung</string>
     <string name="series">Serie</string>
+    <string name="series_id">Serien Id</string>
+    <string name="filter_reset">Filter zurückgesetzt</string>
 </resources>
